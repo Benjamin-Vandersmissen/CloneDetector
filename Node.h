@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <exception>
+#include "Components.h"
 
 class ConstructionException: public std::exception{
 private:
@@ -19,7 +20,6 @@ public:
     const char* what() const noexcept ;
 };
 
-class Component;
 
 class Node {
 private:
