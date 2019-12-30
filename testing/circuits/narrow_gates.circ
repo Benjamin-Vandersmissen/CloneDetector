@@ -8,6 +8,21 @@
       <a name="size" val="70"/>
       <a name="inputs" val="2"/>
     </tool>
+    <tool name="OR Gate">
+      <a name="size" val="70"/>
+    </tool>
+    <tool name="NAND Gate">
+      <a name="size" val="70"/>
+    </tool>
+    <tool name="NOR Gate">
+      <a name="size" val="70"/>
+    </tool>
+    <tool name="XOR Gate">
+      <a name="size" val="70"/>
+    </tool>
+    <tool name="XNOR Gate">
+      <a name="size" val="70"/>
+    </tool>
   </lib>
   <lib desc="#Plexers" name="2"/>
   <lib desc="#Arithmetic" name="3"/>
@@ -67,13 +82,48 @@
     <a name="clabel" val=""/>
     <a name="clabelup" val="east"/>
     <a name="clabelfont" val="SansSerif plain 12"/>
-    <wire from="(150,60)" to="(160,60)"/>
-    <wire from="(150,70)" to="(160,70)"/>
-    <wire from="(150,80)" to="(160,80)"/>
-    <wire from="(150,90)" to="(160,90)"/>
-    <wire from="(150,100)" to="(160,100)"/>
-    <comp lib="1" loc="(230,80)" name="AND Gate">
-      <a name="size" val="70"/>
+    <wire from="(580,80)" to="(590,80)"/>
+    <comp lib="1" loc="(280,80)" name="AND Gate">
+      <a name="facing" val="north"/>
+      <a name="size" val="30"/>
+    </comp>
+    <comp lib="1" loc="(400,100)" name="AND Gate">
+      <a name="facing" val="west"/>
+      <a name="size" val="30"/>
+    </comp>
+    <comp lib="1" loc="(220,390)" name="AND Gate">
+      <a name="size" val="30"/>
+    </comp>
+    <comp lib="1" loc="(690,100)" name="XOR Gate">
+      <a name="size" val="30"/>
+    </comp>
+    <comp lib="1" loc="(220,100)" name="AND Gate">
+      <a name="size" val="30"/>
+      <a name="inputs" val="2"/>
+    </comp>
+    <comp lib="1" loc="(570,100)" name="NAND Gate">
+      <a name="size" val="30"/>
+    </comp>
+    <comp lib="1" loc="(770,100)" name="XNOR Gate">
+      <a name="size" val="30"/>
+    </comp>
+    <comp lib="1" loc="(220,200)" name="AND Gate">
+      <a name="size" val="30"/>
+      <a name="inputs" val="3"/>
+    </comp>
+    <comp lib="1" loc="(220,290)" name="AND Gate">
+      <a name="size" val="30"/>
+      <a name="inputs" val="4"/>
+    </comp>
+    <comp lib="1" loc="(350,110)" name="AND Gate">
+      <a name="facing" val="south"/>
+      <a name="size" val="30"/>
+    </comp>
+    <comp lib="1" loc="(510,100)" name="OR Gate">
+      <a name="size" val="30"/>
+    </comp>
+    <comp lib="1" loc="(630,100)" name="NOR Gate">
+      <a name="size" val="30"/>
     </comp>
   </circuit>
 </project>

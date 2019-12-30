@@ -67,13 +67,36 @@
     <a name="clabel" val=""/>
     <a name="clabelup" val="east"/>
     <a name="clabelfont" val="SansSerif plain 12"/>
-    <wire from="(150,60)" to="(160,60)"/>
-    <wire from="(150,70)" to="(160,70)"/>
-    <wire from="(150,80)" to="(160,80)"/>
-    <wire from="(150,90)" to="(160,90)"/>
-    <wire from="(150,100)" to="(160,100)"/>
-    <comp lib="1" loc="(230,80)" name="AND Gate">
+    <wire from="(230,130)" to="(260,130)"/>
+    <wire from="(230,170)" to="(260,170)"/>
+    <wire from="(420,180)" to="(430,180)"/>
+    <wire from="(420,120)" to="(430,120)"/>
+    <wire from="(420,140)" to="(430,140)"/>
+    <wire from="(420,160)" to="(430,160)"/>
+    <wire from="(420,200)" to="(430,200)"/>
+    <wire from="(420,210)" to="(430,210)"/>
+    <wire from="(420,220)" to="(430,220)"/>
+    <wire from="(420,240)" to="(430,240)"/>
+    <wire from="(420,250)" to="(430,250)"/>
+    <wire from="(420,260)" to="(430,260)"/>
+    <wire from="(250,250)" to="(260,250)"/>
+    <wire from="(250,280)" to="(260,280)"/>
+    <wire from="(250,220)" to="(260,220)"/>
+    <comp lib="1" loc="(500,230)" name="AND Gate">
       <a name="size" val="70"/>
+      <a name="inputs" val="6"/>
+    </comp>
+    <comp lib="1" loc="(330,150)" name="AND Gate">
+      <a name="size" val="70"/>
+      <a name="inputs" val="2"/>
+    </comp>
+    <comp lib="1" loc="(330,250)" name="AND Gate">
+      <a name="size" val="70"/>
+      <a name="inputs" val="3"/>
+    </comp>
+    <comp lib="1" loc="(500,140)" name="AND Gate">
+      <a name="size" val="70"/>
+      <a name="inputs" val="4"/>
     </comp>
   </circuit>
 </project>
