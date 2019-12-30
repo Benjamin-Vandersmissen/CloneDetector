@@ -88,5 +88,13 @@ public:
     void calculatePorts() override ;
 };
 
+// NOT
+class NotComponent : public Component{
+public:
+    NotComponent(int lib, const std::string &name, const std::string &loc);
+
+    void calculatePorts() override ;
+};
+
 Component* createComponent(int lib, const std::string &name, const std::string &loc);
 #endif //CLONEDETECTOR_COMPONENTS_H

@@ -199,5 +199,46 @@ Component *createComponent(int lib, const std::string &name, const std::string &
     if (lib == 1 and (name == "AND Gate" or name == "OR Gate" or name == "NAND Gate" or name == "NOR Gate" or name == "XOR Gate" or name == "XNOR Gate"))
         return new GateComponent(lib, name, loc);
 
+    if (lib == 1 and (name == "NOT Gate"))
+        return new NotComponent(lib, name, loc);
+
     return nullptr;
+}
+
+NotComponent::NotComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name, loc) {}
+
+void NotComponent::calculatePorts() {
+    auto length = 30; // default length for NOT gates
+    if (m_attributes.find("size") != m_attributes.end()){
+        length = std::stoi(m_attributes["size"]);
+    }
+
+    auto relative_center = m_loc;
+
+    auto facing = directions::EAST;
+    if (m_attributes.find("facing") != m_attributes.end()) {
+        if (m_attributes["facing"] == "north") {
+            facing = directions::NORTH;
+        } else if (m_attributes["facing"] == "south") {
+            facing = directions::SOUTH;
+        } else if (m_attributes["facing"] == "west") {
+            facing = directions::WEST;
+        }
+    }
+
+    switch(facing){
+        case directions ::EAST:
+            relative_center.first -= length;
+            break;
+        case directions ::SOUTH:
+            relative_center.second -= length;
+            break;
+        case directions ::WEST:
+            relative_center.first += length;
+            break;
+        case directions ::NORTH:
+            relative_center.second += length;
+            break;
+    }
+    m_in.push_back(relative_center);
 }
