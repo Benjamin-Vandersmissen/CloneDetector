@@ -24,6 +24,10 @@ private:
 
     std::map<Component*, Node*> m_component_map;
 
+    std::vector<Component*> m_inputs;
+
+    std::vector<Component*> m_outputs;
+
 public:
     Circuit(const std::string& name);
 
@@ -38,6 +42,8 @@ public:
     std::vector<Node*> getForestRepresentation() const;
 
     const std::vector<Component *> &getComponents() const;
+
+    void calculatePorts();
 };
 
 class XMLParser {

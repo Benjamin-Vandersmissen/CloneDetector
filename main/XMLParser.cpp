@@ -33,6 +33,7 @@ void XMLParser::parseCircuits() {
         parseWires(circuit_elem);
         parseComponents(circuit_elem);
         circuit_elem = circuit_elem->NextSiblingElement("circuit");
+        m_circuits.back().calculatePorts();
     }
 }
 
@@ -162,4 +163,18 @@ std::vector<Node *> Circuit::getForestRepresentation() const {
 
 const std::vector<Component *> &Circuit::getComponents() const {
     return m_components;
+}
+
+void Circuit::calculatePorts() {
+    for(auto component : m_components){
+        if (component->name() == "Pin"  and component->m_lib == 0){
+            if(component->m_attributes.find("output") != component->m_attributes.end())
+                m_outputs.push_back(component);
+            else
+                m_inputs.push_back(component);
+
+        }
+    }
+    std::sort(m_inputs.begin(), m_inputs.end(), sortPorts);
+    std::sort(m_outputs.begin(), m_outputs.end(), sortPorts);
 }

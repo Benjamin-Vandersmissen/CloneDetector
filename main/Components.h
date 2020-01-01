@@ -30,9 +30,6 @@ public:
     int connectedPort(const Component *component) const;
 };
 
-//TODO: create subclasses for easier manipulation?
-
-
 class Component{
 protected:
     std::string m_name;
@@ -61,6 +58,8 @@ public:
 
     friend class Node;
 
+    friend class Circuit;
+
     Component(int lib, const std::string &name, const std::string &loc);
 
     void addAttribute(const std::string& name, const std::string& val);
@@ -78,7 +77,11 @@ public:
     int indexOfPort(const Coordinate& coordinate) const;
 
     const std::vector<Coordinate> &getInputPorts() const;
+
+    friend bool sortPorts(const Component* comp1, const Component* comp2);
 };
+
+bool sortPorts(const Component* comp1, const Component* comp2);
 
 // AND, OR, NAND, NOR, XOR, XNOR
 class GateComponent : public Component{
@@ -92,6 +95,14 @@ public:
 class NotComponent : public Component{
 public:
     NotComponent(int lib, const std::string &name, const std::string &loc);
+
+    void calculatePorts() override ;
+};
+
+// Pin
+class PinComponent : public Component{
+public:
+    PinComponent(int lib, const std::string &name, const std::string &loc);
 
     void calculatePorts() override ;
 };

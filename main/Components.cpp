@@ -202,6 +202,8 @@ Component *createComponent(int lib, const std::string &name, const std::string &
     if (lib == 1 and (name == "NOT Gate"))
         return new NotComponent(lib, name, loc);
 
+    if (lib == 0 and (name == "Pin"))
+        return new PinComponent(lib, name, loc);
     return nullptr;
 }
 
@@ -241,4 +243,18 @@ void NotComponent::calculatePorts() {
             break;
     }
     m_in.push_back(relative_center);
+}
+
+bool sortPorts(const Component* comp1, const Component* comp2){
+    if(comp1->m_loc.second < comp2->m_loc.second)
+        return true;
+    else if (comp1->m_loc.first < comp2->m_loc.first and comp1->m_loc.second == comp2->m_loc.second)
+        return true;
+    return false;
+}
+
+PinComponent::PinComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name, loc) {}
+
+void PinComponent::calculatePorts() {
+    //TODO: implement
 }
