@@ -32,10 +32,10 @@ private:
     // outport : (Node, inport)
     std::map<unsigned, std::pair<Node*, unsigned> > m_outgoing_nodes;
 
+public:
     // name : occurences
     static std::map<std::string, unsigned int> counter;
 
-public:
     Node(std::string name);
 
     Node(Component* component);

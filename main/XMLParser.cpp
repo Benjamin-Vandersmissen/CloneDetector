@@ -9,6 +9,7 @@
 XMLParser::XMLParser(const std::string &filename) {
     m_document.LoadFile(filename.c_str());
     m_root_elem = m_document.FirstChildElement("project");
+    Node::counter = {};
 }
 
 void XMLParser::parse() {

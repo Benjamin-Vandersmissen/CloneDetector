@@ -284,40 +284,10 @@ bool sortPorts(const Component* comp1, const Component* comp2){
 PinComponent::PinComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name, loc) {}
 
 void PinComponent::calculatePorts() {
-    if (not(contains(m_attributes, "output"))) {  // Input pin has no inputs, output pin has one
+    if (not(contains(m_attributes, "output")))   // Input pin has no inputs, output pin has one
         m_out.push_back(m_loc);
-        return;
-    }
-
-    auto length = 20;
-    auto relative_center = m_loc;
-
-    auto facing = directions::EAST;
-    if (m_attributes.find("facing") != m_attributes.end()) {
-        if (m_attributes["facing"] == "north") {
-            facing = directions::NORTH;
-        } else if (m_attributes["facing"] == "south") {
-            facing = directions::SOUTH;
-        } else if (m_attributes["facing"] == "west") {
-            facing = directions::WEST;
-        }
-    }
-
-    switch(facing){
-        case directions ::EAST:
-            relative_center.first -= length;
-            break;
-        case directions ::SOUTH:
-            relative_center.second -= length;
-            break;
-        case directions ::WEST:
-            relative_center.first += length;
-            break;
-        case directions ::NORTH:
-            relative_center.second += length;
-            break;
-    }
-    m_in.push_back(relative_center);
+    else
+        m_in.push_back(m_loc);
 }
 
 CircuitComponent::CircuitComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name,
