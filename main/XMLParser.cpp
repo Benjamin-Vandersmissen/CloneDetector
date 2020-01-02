@@ -109,43 +109,48 @@ Component &Circuit::lastComponent() {
 void Circuit::generateGraph() {
     for(auto& component : m_components){
         component->calculatePorts();
-        m_component_map[component] = new Node(component->name());
+        m_component_map[component] = new Node(component);
     }
-    for (size_t i = 0; i < m_components.size(); ++i){
-        auto& component = m_components[i];
-        std::vector<Wire*> wires;
-        for(auto& wire : m_wires){
-            if (component->canOutputTo(wire)){
-                wires.push_back(&wire);
+    for (auto & component : m_components){
+        // for each component
+
+        for(auto outport = 0; outport < component->m_out.size(); ++outport) {
+            // for each output port of the component
+
+            std::vector<Wire *> wires;
+            for (auto &wire : m_wires) {
+                if (component->canOutputTo(wire, outport)) {
+                    wires.push_back(&wire);
+                }
             }
-        }
-        auto previous_size = 0;
-        while(wires.size() > previous_size){  // find all wires directly connected to this output
-            previous_size = wires.size();
-            for(auto& wire1 : m_wires){
-                for(auto wire2 : wires){
-                    if (wire2->canConnectTo(wire1) and std::find(wires.begin(), wires.end(), &wire1) == wires.end()){ // Add a new wire
-                        wires.push_back(&wire1);
+            auto previous_size = 0;
+            while (wires.size() > previous_size) {  // find all wires directly connected to this output
+                previous_size = wires.size();
+                for (auto &wire1 : m_wires) {
+                    auto size = wires.size();
+                    for (auto i = 0; i < size; ++i) {
+                        auto wire2 = wires[i];
+                        if (wire2->canConnectTo(wire1) and ! contains(wires, &wire1)) { // Add a new wire
+                            wires.push_back(&wire1);
+                        }
                     }
                 }
             }
-        }
-        if (wires.empty()){ // A component could be directly connected
-            for(size_t j = 0; j < m_components.size(); ++j){
-                auto& other_component = m_components[j];
-                if (component->canOutputTo(other_component)){
-                    auto port = component->connectedPort(other_component);
-                    m_component_map[component]->addOutGoingConnection(m_component_map[other_component], port);
+            if (wires.empty()) { // A component could be directly connected
+                for (auto & other_component : m_components) {
+                    if (component->canOutputTo(other_component, outport)) {
+                        auto inPort = component->connectedInPort(other_component);
+                        m_component_map[component]->addOutGoingConnection(m_component_map[other_component], inPort, outport);
+                    }
                 }
-            }
-        }
-        else{  // find all components whose inputs are connected to this component's output
-            for(size_t j = 0; j < m_components.size(); ++j){
-                auto& other_component = m_components[j];
-                for(auto& wire : wires){
-                    if (wire->canOutputTo(other_component)){
-                        auto port = wire->connectedPort(other_component);
-                        m_component_map[component]->addOutGoingConnection(m_component_map[other_component], port);
+            } else {  // find all components whose inputs are connected to this component's output
+                for (auto & other_component : m_components) {
+                    for (auto &wire : wires) {
+                        if (wire->canOutputTo(other_component)) {
+                            auto inPort = wire->connectedPort(other_component);
+                            m_component_map[component]->addOutGoingConnection(m_component_map[other_component], inPort,
+                                                                              outport);
+                        }
                     }
                 }
             }
@@ -177,4 +182,6 @@ void Circuit::calculatePorts() {
     }
     std::sort(m_inputs.begin(), m_inputs.end(), sortPorts);
     std::sort(m_outputs.begin(), m_outputs.end(), sortPorts);
+
+    circuit_port_map[m_name] = {m_inputs.size(), m_outputs.size()};
 }

@@ -17,25 +17,23 @@ Node::Node(std::string name) {
     m_name = name + "_" + std::to_string(counter[name]++); // Append index to name and increment index
 }
 
-void Node::addOutGoingConnection(Node *node, unsigned port) {
-    node->addIncomingConnection(this, port);
-    this->m_outgoing_nodes.push_back(node);
+void Node::addOutGoingConnection(Node *node, unsigned inport, unsigned outport) {
+    node->addIncomingConnection(this, inport, outport);
+    this->m_outgoing_nodes[outport] = {node, inport};
 }
 
-Node::Node(Component *component) : Node(component->m_name){
-    m_nr_ports = component->m_in.size();
+Node::Node(Component *component) : Node(component->m_name){}
+
+void Node::addIncomingConnection(Node *node, unsigned inport, unsigned outport) {
+    if (m_incoming_nodes.find(inport) != m_incoming_nodes.end())
+        throw ConstructionException("Port " + std::to_string(inport) + " of " + m_name + " has multiple connected outputs");
+    m_incoming_nodes[inport] = {node, outport};
 }
 
-void Node::addIncomingConnection(Node *node, unsigned port) {
-    if (m_incoming_nodes.find(port) != m_incoming_nodes.end())
-        throw ConstructionException("Port " + std::to_string(port) + " of " + m_name + " has multiple connected outputs");
-    m_incoming_nodes[port] = node;
-}
-
-std::vector<std::pair<unsigned int, Node *>> Node::getIncomingNodes() const {
-    std::vector<std::pair<unsigned, Node*> > out;
+std::vector<std::tuple<unsigned, Node*, unsigned>>  Node::getIncomingNodes() const {
+    std::vector<std::tuple<unsigned, Node*, unsigned> > out;
     for(const auto& pair : m_incoming_nodes){
-        out.emplace_back(pair);
+        out.emplace_back(pair.first, pair.second.first, pair.second.second);
     }
     return out;
 }
@@ -56,10 +54,11 @@ void plot(std::ostream &stream, const std::vector<std::vector<Node *> > &forest)
     for (const auto& tree : forest){
         for (const auto& node : tree){
             auto incoming = node->getIncomingNodes();
-            for(const auto& pair : incoming){
-                auto port = pair.first;
-                auto other = pair.second;
-                stream << "\"" << other->getName() << "\" -> \"" << node->getName() << "\" [label=\" todo_OUT / " << port << "\"]\n";
+            for(const auto& tuple : incoming){
+                auto inport = std::get<0>(tuple);
+                auto other = std::get<1>(tuple);
+                auto outport = std::get<2>(tuple);
+                stream << "\"" << other->getName() << "\" -> \"" << node->getName() << "\" [label=\" " << outport << " / " << inport << "\"]\n";
             }
             if (incoming.empty())
                 stream << "\"" << node->getName() << "\"" << std::endl;

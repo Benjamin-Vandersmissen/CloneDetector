@@ -5,6 +5,8 @@
 #include "Components.h"
 #include <iostream>
 
+std::map<std::string, std::pair<int, int> > circuit_port_map = {};
+
 Wire::Wire(const std::string &from, const std::string &to) {
     unsigned from_x = std::stoi(from.substr(1, from.find(',') - 1));
     unsigned from_y = std::stoi(from.substr(from.find(',') + 1, from.size() - from.find(',')));
@@ -12,26 +14,22 @@ Wire::Wire(const std::string &from, const std::string &to) {
     unsigned to_x = std::stoi(to.substr(1, to.find(',') - 1));
     unsigned to_y = std::stoi(to.substr(to.find(',') + 1, to.size() - to.find(',')));
 
-    m_from = makeCoordinate(from_x, from_y);
-    m_to = makeCoordinate(to_x, to_y);
+        m_points = std::vector<Coordinate >{makeCoordinate(from_x, from_y), makeCoordinate(to_x, to_y)};
 }
 
 bool Wire::canConnectTo(const Wire &wire)  const{
-    return wire.m_from == this->m_from or wire.m_from == this->m_to or wire.m_to == this->m_from or wire.m_to == this->m_to;
+    return ! intersection(wire.m_points, m_points).empty();
 }
 
 bool Wire::canOutputTo(const Component *component) const {
-    bool result = false;
-    result |= contains(component->m_in, m_to);
-    result |= contains(component->m_in, m_from);
-    return result;
+    return ! intersection(component->m_in, m_points).empty();
 }
 
 int Wire::connectedPort(const Component *component) const {
-    if (contains(component->m_in, m_to))  // TODO: this if statement is not very correct, because m_in is private
-        return component->indexOfPort(m_to);
+    if (contains(component->m_in, m_points[0]))  // TODO: this if statement is not very correct, because m_in is private
+        return component->indexOfInPort(m_points[0]);
     else
-        return component->indexOfPort(m_from);
+        return component->indexOfInPort(m_points[1]);
 }
 
 Component::Component(int lib, const std::string &name, const std::string &loc) : m_lib(lib), m_name(name){
@@ -40,30 +38,33 @@ Component::Component(int lib, const std::string &name, const std::string &loc) :
     unsigned loc_y = std::stoi(loc.substr(loc.find(',') + 1, loc.size() - loc.find(',')));
 
     m_loc = makeCoordinate(loc_x, loc_y);
-    m_out = m_loc;  // alias for convenience
 }
 
 void Component::addAttribute(const std::string &name, const std::string &val) {
     m_attributes[name] = val;
 }
 
-bool Component::canOutputTo(const Wire &wire) const {
-    return m_out == wire.m_from || m_out == wire.m_to;
+bool Component::canOutputTo(const Wire &wire, unsigned long outport) const {
+    return contains(wire.m_points, m_out[outport]);
 }
 
-bool Component::canOutputTo(const Component *component) const{
-    return contains(component->m_in, m_out);
+bool Component::canOutputTo(const Component *component, unsigned outport) const{
+    return contains(component->m_in, m_out[outport]);
 }
 
 const std::string &Component::name() const {
     return m_name;
 }
 
-int Component::connectedPort(const Component *component) const {
-    return component->indexOfPort(m_out);
+int Component::connectedInPort(const Component *component) const {
+    for (auto out : m_out) {
+        auto val = component->indexOfInPort(out);
+        if (val != -1) return val;
+    }
+    return -1;
 }
 
-int Component::indexOfPort(const Coordinate &coordinate) const {
+int Component::indexOfInPort(const Coordinate &coordinate) const {
     return index(m_in, coordinate);
 }
 
@@ -75,7 +76,10 @@ void GateComponent::calculatePorts() {
     // TODO: inverted ports implementeren
     auto width = 50;
     auto length = 50; // default length for most gates
-    if (m_attributes.find("size") != m_attributes.end()){
+
+    m_out.push_back(m_loc); //one output port
+
+    if (contains(m_attributes, "size")){
         length = std::stoi(m_attributes["size"]);
         width = length;
     }
@@ -90,7 +94,7 @@ void GateComponent::calculatePorts() {
     auto relative_center = m_loc;
 
     auto facing = directions::EAST;
-    if (m_attributes.find("facing") != m_attributes.end()) {
+    if (contains(m_attributes, "facing")) {
         if (m_attributes["facing"] == "north") {
             facing = directions::NORTH;
         } else if (m_attributes["facing"] == "south") {
@@ -101,7 +105,7 @@ void GateComponent::calculatePorts() {
     }
 
     auto nr_inputs = 5;
-    if (m_attributes.find("inputs") != m_attributes.end()){
+    if (contains(m_attributes, "inputs")){
         nr_inputs = std::stoi(m_attributes["inputs"]);
     }
 
@@ -204,6 +208,8 @@ Component *createComponent(int lib, const std::string &name, const std::string &
 
     if (lib == 0 and (name == "Pin"))
         return new PinComponent(lib, name, loc);
+    if (lib == -1)
+        return new CircuitComponent(lib, name, loc);
     return nullptr;
 }
 
@@ -211,14 +217,16 @@ NotComponent::NotComponent(int lib, const std::string &name, const std::string &
 
 void NotComponent::calculatePorts() {
     auto length = 30; // default length for NOT gates
-    if (m_attributes.find("size") != m_attributes.end()){
+    if (contains(m_attributes, "size")){
         length = std::stoi(m_attributes["size"]);
     }
+
+    m_out.push_back(m_loc);
 
     auto relative_center = m_loc;
 
     auto facing = directions::EAST;
-    if (m_attributes.find("facing") != m_attributes.end()) {
+    if (contains(m_attributes, "facing")) {
         if (m_attributes["facing"] == "north") {
             facing = directions::NORTH;
         } else if (m_attributes["facing"] == "south") {
@@ -256,5 +264,114 @@ bool sortPorts(const Component* comp1, const Component* comp2){
 PinComponent::PinComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name, loc) {}
 
 void PinComponent::calculatePorts() {
-    //TODO: implement
+    if (not(contains(m_attributes, "output"))) {  // Input pin has no inputs, output pin has one
+        m_out.push_back(m_loc);
+        return;
+    }
+
+    auto length = 20;
+    auto relative_center = m_loc;
+
+    auto facing = directions::EAST;
+    if (m_attributes.find("facing") != m_attributes.end()) {
+        if (m_attributes["facing"] == "north") {
+            facing = directions::NORTH;
+        } else if (m_attributes["facing"] == "south") {
+            facing = directions::SOUTH;
+        } else if (m_attributes["facing"] == "west") {
+            facing = directions::WEST;
+        }
+    }
+
+    switch(facing){
+        case directions ::EAST:
+            relative_center.first -= length;
+            break;
+        case directions ::SOUTH:
+            relative_center.second -= length;
+            break;
+        case directions ::WEST:
+            relative_center.first += length;
+            break;
+        case directions ::NORTH:
+            relative_center.second += length;
+            break;
+    }
+    m_in.push_back(relative_center);
+}
+
+CircuitComponent::CircuitComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name,
+                                                                                                         loc) {}
+/**
+ *  _____________
+ * /             \
+ * \             /
+ *  \           /
+ *   \         /    This works only with the default appearance of Circuits, if one changes the appearance of a circuit, this no longer works
+ *    \       /
+ *     \     /
+ *      \   /
+ *       \ /
+ *
+ *      (  )
+ * */
+void CircuitComponent::calculatePorts() {
+    auto ports = circuit_port_map[m_name];
+    auto width = std::max(20, (std::max(ports.first, ports.second)-1)*10);
+    auto length = 30;
+
+    auto first_in = m_loc;
+
+    auto facing = directions::EAST;
+    if (m_attributes.find("facing") != m_attributes.end()) {
+        if (m_attributes["facing"] == "north") {
+            facing = directions::NORTH;
+        } else if (m_attributes["facing"] == "south") {
+            facing = directions::SOUTH;
+        } else if (m_attributes["facing"] == "west") {
+            facing = directions::WEST;
+        }
+    }
+
+    // If no outputs, m_loc is the position of the first input, otherwise it's the position of the first output
+    if(ports.second == 0){
+        for(auto i = 0; i < ports.first; ++i){
+            if (facing == directions::EAST or facing == directions::WEST)
+                m_in.push_back(makeCoordinate(m_loc.first, m_loc.second + 10*i));
+            else
+                m_in.push_back(makeCoordinate(m_loc.first + 10*i, m_loc.second));
+        }
+        return;
+    }
+    for(auto i = 0; i < ports.second; ++i){
+        if (facing == directions::EAST or facing == directions::WEST)
+            m_out.push_back(makeCoordinate(m_loc.first, m_loc.second + 10*i));
+        else
+            m_out.push_back(makeCoordinate(m_loc.first + 10*i, m_loc.second));
+    }
+
+    switch(facing){
+        case directions ::EAST:
+            first_in.first -= length;
+            first_in.second += ((ports.second - ports.first) / 2) * 10;
+            break;
+        case directions ::SOUTH:
+            first_in.second -= length;
+            first_in.first += ((ports.second - ports.first) / 2) * 10;
+            break;
+        case directions ::WEST:
+            first_in.first += length;
+            first_in.second += ((ports.second - ports.first) / 2) * 10;
+            break;
+        case directions ::NORTH:
+            first_in.second += length;
+            first_in.first += ((ports.second - ports.first) / 2) * 10;
+            break;
+    }
+    for(auto i = 0; i < ports.first; ++i){
+        if (facing == directions::EAST or facing == directions::WEST)
+            m_in.push_back(makeCoordinate(first_in.first, first_in.second + 10*i));
+        else
+            m_in.push_back(makeCoordinate(first_in.first + 10*i, first_in.second));
+    }
 }

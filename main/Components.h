@@ -8,15 +8,15 @@
 #include "Utility.h"
 #include <map>
 
+extern std::map<std::string, std::pair<int, int> > circuit_port_map;
+
 class Component;
 
 class GateComponent;
 
 class Wire{
 private:
-    Coordinate m_from;
-
-    Coordinate m_to;
+    std::vector<Coordinate > m_points;
 
 public:
     friend class Component;
@@ -40,9 +40,7 @@ protected:
 
     std::map<std::string, std::string> m_attributes;
 
-    Coordinate m_out;
-
-    std::vector<Coordinate > m_out_temp;
+    std::vector<Coordinate > m_out;
 
     std::vector<Coordinate > m_in;
 
@@ -66,15 +64,15 @@ public:
 
     virtual void calculatePorts() = 0;
 
-    bool canOutputTo(const Wire& wire) const;
+    bool canOutputTo(const Wire &wire, unsigned long outport=0) const;
 
-    bool canOutputTo(const Component *component) const;
+    bool canOutputTo(const Component *component, unsigned outport=0) const;
 
     const std::string& name() const;
 
-    int connectedPort(const Component *component) const;
+    int connectedInPort(const Component *component) const;
 
-    int indexOfPort(const Coordinate& coordinate) const;
+    int indexOfInPort(const Coordinate& coordinate) const;
 
     const std::vector<Coordinate> &getInputPorts() const;
 
@@ -107,5 +105,12 @@ public:
     void calculatePorts() override ;
 };
 
+// Circuit
+class CircuitComponent : public Component{
+public:
+    CircuitComponent(int lib, const std::string &name, const std::string &loc);
+
+    void calculatePorts() override ;
+};
 Component* createComponent(int lib, const std::string &name, const std::string &loc);
 #endif //CLONEDETECTOR_COMPONENTS_H

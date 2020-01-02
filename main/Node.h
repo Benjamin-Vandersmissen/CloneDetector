@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <exception>
+#include <tuple>
 #include "Components.h"
 
 class ConstructionException: public std::exception{
@@ -25,11 +26,11 @@ class Node {
 private:
     std::string m_name;
 
-    unsigned m_nr_ports;
+    // inport : (Node, outport)
+    std::map<unsigned, std::pair<Node*, unsigned> > m_incoming_nodes;
 
-    std::map<unsigned, Node*> m_incoming_nodes;
-
-    std::vector<Node*> m_outgoing_nodes;
+    // outport : (Node, inport)
+    std::map<unsigned, std::pair<Node*, unsigned> > m_outgoing_nodes;
 
     static std::map<std::string, unsigned int> counter;
 
@@ -38,11 +39,11 @@ public:
 
     Node(Component* component);
 
-    void addOutGoingConnection(Node *node, unsigned port);
+    void addOutGoingConnection(Node *node, unsigned inport, unsigned outport);
 
-    void addIncomingConnection(Node* node, unsigned port);
+    void addIncomingConnection(Node *node, unsigned inport, unsigned outport);
 
-    std::vector<std::pair<unsigned int, Node *>> getIncomingNodes() const;
+    std::vector<std::tuple<unsigned, Node*, unsigned>> getIncomingNodes() const;
 
     const std::string &getName() const;
 };
