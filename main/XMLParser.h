@@ -118,6 +118,8 @@ private:
      * \brief parse the additional attributes associated with a component
      * */
     void parseAttributes(tinyxml2::XMLElement* comp_root_elem);
+
+    bool print_while_parsing = false;
 public:
     XMLParser(const std::string& filename);
 

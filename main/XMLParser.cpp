@@ -22,7 +22,7 @@ void XMLParser::parseLibraries() {
     while(lib_elem != NULL){
         auto library_name = lib_elem->Attribute("desc");
         auto library_id = lib_elem->IntAttribute("name");
-        std::cout << library_name << "  " << library_id << std::endl;
+        if (print_while_parsing) std::cout << library_name << "  " << library_id << std::endl;
         lib_elem = lib_elem->NextSiblingElement("lib");
     }
 }
@@ -31,7 +31,7 @@ void XMLParser::parseCircuits() {
     auto circuit_elem = m_root_elem->FirstChildElement("circuit");
     while(circuit_elem != nullptr){
         auto circuit_name = circuit_elem->Attribute("name");
-        std::cout << "CIRCUIT: " << circuit_name << std::endl;
+        if (print_while_parsing) std::cout << "CIRCUIT: " << circuit_name << std::endl;
         m_circuits.emplace_back(circuit_name);
         parseWires(circuit_elem);
         parseComponents(circuit_elem);
@@ -46,7 +46,7 @@ void XMLParser::parseWires(tinyxml2::XMLElement *circuit_root_elem) {
         auto from = wire_elem->Attribute("from");
         auto to = wire_elem->Attribute("to");
         m_circuits.back().addWire(from, to);
-        std::cout << "\t wire from " << from << " to " << to << std::endl;
+        if (print_while_parsing) std::cout << "\t wire from " << from << " to " << to << std::endl;
         wire_elem = wire_elem->NextSiblingElement("wire");
     }
 }
@@ -58,7 +58,7 @@ void XMLParser::parseComponents(tinyxml2::XMLElement *circuit_root_elem) {
         int lib = comp_elem->IntAttribute("lib", -1);
         auto name = comp_elem->Attribute("name");
         m_circuits.back().addComponent(lib, name, loc);
-        std::cout << "\t component of library " << lib << " named " << name << " at " << loc << std::endl;
+        if (print_while_parsing) std::cout << "\t component of library " << lib << " named " << name << " at " << loc << std::endl;
         parseAttributes(comp_elem);
         comp_elem = comp_elem->NextSiblingElement("comp");
     }
@@ -69,7 +69,7 @@ void XMLParser::parseAttributes(tinyxml2::XMLElement *comp_root_elem) {
     while(attr_elem != nullptr){
         auto name = attr_elem->Attribute("name");
         auto value = attr_elem->Attribute("val");
-        std::cout << "\t \t " << name << " : " << value << std::endl;
+        if (print_while_parsing) std::cout << "\t \t " << name << " : " << value << std::endl;
         m_circuits.back().lastComponent().addAttribute(name, value);
         attr_elem = attr_elem->NextSiblingElement("a");
     }
