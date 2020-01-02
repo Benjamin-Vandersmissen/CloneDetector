@@ -73,7 +73,6 @@ const std::vector<Coordinate> &Component::getInputPorts() const {
 }
 
 void GateComponent::calculatePorts() {
-    // TODO: inverted ports implementeren
     auto width = 50;
     auto length = 50; // default length for most gates
 
@@ -192,6 +191,29 @@ void GateComponent::calculatePorts() {
                 }
                 m_in.push_back(input);
                 input.second += step;
+            }
+        }
+    }
+
+    for(auto i = 0; i < m_in.size(); ++ i){
+        auto& coord = m_in[i];
+        if (contains(m_attributes, "negate" + std::to_string(i))){
+            switch(facing){
+                case directions ::EAST:
+                    coord.first -= 10;
+                    break;
+
+                case directions ::WEST:
+                    coord.first += 10;
+                    break;
+
+                case directions ::NORTH:
+                    coord.second -= 10;
+                    break;
+
+                case directions ::SOUTH:
+                    coord.second += 10;
+                    break;
             }
         }
     }
