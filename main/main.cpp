@@ -9,7 +9,11 @@ int main() {
     parser.generateGraphs();
     auto forests = parser.getForests();
     std::ofstream file("./test.dot");
-    plot(file, forests);
+    auto names = std::vector<std::string>{};
+    for(auto circuit : parser.getCircuits()){
+        names.push_back(circuit.getName());
+    }
+    plot(file, forests, names);
     file.close();
     return 0;
 }

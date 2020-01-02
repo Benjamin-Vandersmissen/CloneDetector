@@ -16,9 +16,9 @@ class ConstructionException: public std::exception{
 private:
     std::string m_errmsg;
 public:
-    ConstructionException(const std::string& msg);
+    explicit ConstructionException(std::string  msg);
 
-    const char* what() const noexcept ;
+    [[nodiscard]] const char* what() const noexcept override ;
 };
 
 
@@ -32,6 +32,7 @@ private:
     // outport : (Node, inport)
     std::map<unsigned, std::pair<Node*, unsigned> > m_outgoing_nodes;
 
+    // name : occurences
     static std::map<std::string, unsigned int> counter;
 
 public:
@@ -39,16 +40,30 @@ public:
 
     Node(Component* component);
 
+    /**
+     * \brief add an outgoing connection from this node to another node
+     * */
     void addOutGoingConnection(Node *node, unsigned inport, unsigned outport);
 
+    /**
+     * \brief add an incoming connection to this node from another node
+     * */
     void addIncomingConnection(Node *node, unsigned inport, unsigned outport);
 
+    /**
+     * \brief returns the incoming nodes in the format {{inport, node, outport}..}
+     * */
     std::vector<std::tuple<unsigned, Node*, unsigned>> getIncomingNodes() const;
 
+    /**
+     * \brief Simple getter for the name
+     * */
     const std::string &getName() const;
 };
 
-
-void plot(std::ostream &stream, const std::vector<std::vector<Node*> >& forest);
+/**
+ * \brief generate a dot output for forests, plots all the forests in the same stream
+ * */
+void plot(std::ostream &stream, const std::vector<std::vector<Node *> > &forest, std::vector<std::string> names);
 
 #endif //CLONEDETECTOR_NODE_H

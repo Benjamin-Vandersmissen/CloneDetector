@@ -46,12 +46,14 @@ const char *ConstructionException::what() const noexcept {
     return m_errmsg.c_str();
 }
 
-ConstructionException::ConstructionException(const std::string &msg) : m_errmsg(msg){}
+ConstructionException::ConstructionException(std::string msg) : m_errmsg(std::move(msg)){}
 
 
-void plot(std::ostream &stream, const std::vector<std::vector<Node *> > &forest) {
+void plot(std::ostream &stream, const std::vector<std::vector<Node *> > &forest, std::vector<std::string> names) {
     stream << "digraph Circuit{\n";
+    auto name_it = names.begin();
     for (const auto& tree : forest){
+        stream << "subgraph cluster_" << *name_it << " {\n";
         for (const auto& node : tree){
             auto incoming = node->getIncomingNodes();
             for(const auto& tuple : incoming){
@@ -63,6 +65,9 @@ void plot(std::ostream &stream, const std::vector<std::vector<Node *> > &forest)
             if (incoming.empty())
                 stream << "\"" << node->getName() << "\"" << std::endl;
         }
+        stream << "label=\"Circuit: " << *name_it << "\"\n";
+        std::advance(name_it, 1);
+        stream << "}\n";
     }
     stream << "}";
 }

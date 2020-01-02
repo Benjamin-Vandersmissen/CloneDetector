@@ -4,6 +4,8 @@
 
 #include "XMLParser.h"
 
+#include <utility>
+
 XMLParser::XMLParser(const std::string &filename) {
     m_document.LoadFile(filename.c_str());
     m_root_elem = m_document.FirstChildElement("project");
@@ -26,7 +28,7 @@ void XMLParser::parseLibraries() {
 
 void XMLParser::parseCircuits() {
     auto circuit_elem = m_root_elem->FirstChildElement("circuit");
-    while(circuit_elem != NULL){
+    while(circuit_elem != nullptr){
         auto circuit_name = circuit_elem->Attribute("name");
         std::cout << "CIRCUIT: " << circuit_name << std::endl;
         m_circuits.emplace_back(circuit_name);
@@ -39,7 +41,7 @@ void XMLParser::parseCircuits() {
 
 void XMLParser::parseWires(tinyxml2::XMLElement *circuit_root_elem) {
     auto wire_elem = circuit_root_elem->FirstChildElement("wire");
-    while(wire_elem != NULL){
+    while(wire_elem != nullptr){
         auto from = wire_elem->Attribute("from");
         auto to = wire_elem->Attribute("to");
         m_circuits.back().addWire(from, to);
@@ -50,7 +52,7 @@ void XMLParser::parseWires(tinyxml2::XMLElement *circuit_root_elem) {
 
 void XMLParser::parseComponents(tinyxml2::XMLElement *circuit_root_elem) {
     auto comp_elem = circuit_root_elem->FirstChildElement("comp");
-    while(comp_elem != NULL){
+    while(comp_elem != nullptr){
         auto loc = comp_elem->Attribute("loc");
         int lib = comp_elem->IntAttribute("lib", -1);
         auto name = comp_elem->Attribute("name");
@@ -63,7 +65,7 @@ void XMLParser::parseComponents(tinyxml2::XMLElement *circuit_root_elem) {
 
 void XMLParser::parseAttributes(tinyxml2::XMLElement *comp_root_elem) {
     auto attr_elem = comp_root_elem->FirstChildElement("a");
-    while(attr_elem != NULL){
+    while(attr_elem != nullptr){
         auto name = attr_elem->Attribute("name");
         auto value = attr_elem->Attribute("val");
         std::cout << "\t \t " << name << " : " << value << std::endl;
@@ -90,7 +92,7 @@ const std::vector<Circuit> &XMLParser::getCircuits() const {
     return m_circuits;
 }
 
-Circuit::Circuit(const std::string &name) : m_name(name){
+Circuit::Circuit(std::string name) : m_name(std::move(name)){
 
 }
 
@@ -102,7 +104,7 @@ void Circuit::addComponent(int lib, const std::string &name, const std::string &
     m_components.emplace_back(createComponent(lib, name, loc));
 }
 
-Component &Circuit::lastComponent() {
+Component &Circuit::lastComponent() const{
     return *m_components.back();
 }
 
@@ -139,7 +141,7 @@ void Circuit::generateGraph() {
             if (wires.empty()) { // A component could be directly connected
                 for (auto & other_component : m_components) {
                     if (component->canOutputTo(other_component, outport)) {
-                        auto inPort = component->connectedInPort(other_component);
+                        auto inPort = component->connectedInPort(other_component, outport);
                         m_component_map[component]->addOutGoingConnection(m_component_map[other_component], inPort, outport);
                     }
                 }
@@ -184,4 +186,8 @@ void Circuit::calculatePorts() {
     std::sort(m_outputs.begin(), m_outputs.end(), sortPorts);
 
     circuit_port_map[m_name] = {m_inputs.size(), m_outputs.size()};
+}
+
+const std::string &Circuit::getName() const {
+    return m_name;
 }

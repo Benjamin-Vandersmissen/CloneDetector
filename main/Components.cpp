@@ -56,11 +56,9 @@ const std::string &Component::name() const {
     return m_name;
 }
 
-int Component::connectedInPort(const Component *component) const {
-    for (auto out : m_out) {
-        auto val = component->indexOfInPort(out);
-        if (val != -1) return val;
-    }
+int Component::connectedInPort(const Component *component, int outport) const {
+    auto val = component->indexOfInPort(m_out[outport]);
+    if (val != -1) return val;
     return -1;
 }
 
