@@ -71,26 +71,32 @@
     <wire from="(260,170)" to="(270,170)"/>
     <wire from="(120,130)" to="(150,130)"/>
     <wire from="(120,170)" to="(150,170)"/>
+    <wire from="(40,30)" to="(50,30)"/>
     <wire from="(300,170)" to="(320,170)"/>
     <wire from="(300,140)" to="(320,140)"/>
+    <wire from="(40,70)" to="(60,70)"/>
     <wire from="(260,140)" to="(260,150)"/>
     <wire from="(260,160)" to="(260,170)"/>
     <wire from="(320,170)" to="(320,180)"/>
-    <comp lib="0" loc="(120,170)" name="Pin">
-      <a name="tristate" val="false"/>
-    </comp>
-    <comp lib="1" loc="(200,150)" name="OR Gate">
+    <comp lib="1" loc="(110,50)" name="AND Gate">
       <a name="inputs" val="2"/>
+      <a name="negate0" val="true"/>
     </comp>
-    <comp lib="1" loc="(300,140)" name="NOT Gate"/>
-    <comp loc="(260,150)" name="test"/>
-    <comp lib="1" loc="(230,150)" name="NOT Gate"/>
     <comp lib="1" loc="(300,170)" name="NOT Gate"/>
+    <comp lib="1" loc="(300,140)" name="NOT Gate"/>
     <comp lib="1" loc="(370,160)" name="AND Gate">
       <a name="inputs" val="2"/>
     </comp>
+    <comp lib="1" loc="(230,150)" name="NOT Gate"/>
+    <comp lib="0" loc="(120,170)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
     <comp lib="0" loc="(120,130)" name="Pin">
       <a name="tristate" val="false"/>
+    </comp>
+    <comp loc="(260,150)" name="test"/>
+    <comp lib="1" loc="(200,150)" name="OR Gate">
+      <a name="inputs" val="2"/>
     </comp>
   </circuit>
   <circuit name="test">
@@ -99,19 +105,20 @@
     <a name="clabelup" val="east"/>
     <a name="clabelfont" val="SansSerif plain 12"/>
     <wire from="(200,20)" to="(200,70)"/>
+    <wire from="(200,80)" to="(210,80)"/>
+    <wire from="(200,20)" to="(210,20)"/>
     <wire from="(200,70)" to="(200,80)"/>
-    <wire from="(200,80)" to="(200,90)"/>
     <wire from="(50,70)" to="(200,70)"/>
-    <comp lib="0" loc="(50,70)" name="Pin">
-      <a name="tristate" val="false"/>
-      <a name="label" val="c"/>
-    </comp>
-    <comp lib="0" loc="(200,20)" name="Pin">
+    <comp lib="0" loc="(210,20)" name="Pin">
       <a name="facing" val="west"/>
       <a name="output" val="true"/>
       <a name="labelloc" val="east"/>
     </comp>
-    <comp lib="0" loc="(200,80)" name="Pin">
+    <comp lib="0" loc="(50,70)" name="Pin">
+      <a name="tristate" val="false"/>
+      <a name="label" val="c"/>
+    </comp>
+    <comp lib="0" loc="(210,80)" name="Pin">
       <a name="facing" val="west"/>
       <a name="output" val="true"/>
       <a name="labelloc" val="east"/>

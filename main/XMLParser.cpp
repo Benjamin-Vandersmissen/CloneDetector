@@ -81,12 +81,11 @@ void XMLParser::generateGraphs() {
     }
 }
 
-std::vector<std::vector<Node *>> XMLParser::getForests() const {
-    std::vector<std::vector<Node*>> forests;
-    for(auto& circuit : m_circuits){
-        forests.push_back(circuit.getForestRepresentation());
-    }
-    return forests;
+std::vector<Graph*> XMLParser::getGraphs() const {
+    std::vector<Graph*> graphs;
+    for(auto circuit: m_circuits)
+        graphs.push_back(circuit.getGraphRepresentation());
+    return graphs;
 }
 
 const std::vector<Circuit> &XMLParser::getCircuits() const {
@@ -110,9 +109,11 @@ Component &Circuit::lastComponent() const{
 }
 
 void Circuit::generateGraph() {
+    m_graph = new Graph();
     for(auto& component : m_components){
         component->calculatePorts();
         m_component_map[component] = new Node(component);
+        m_graph->addNode(m_component_map[component]);
     }
     for (auto & component : m_components){
         // for each component
@@ -143,7 +144,8 @@ void Circuit::generateGraph() {
                 for (auto & other_component : m_components) {
                     if (component->canOutputTo(other_component, outport)) {
                         auto inPort = component->connectedInPort(other_component, outport);
-                        m_component_map[component]->addOutGoingConnection(m_component_map[other_component], inPort, outport);
+                        Edge* e = new Edge(m_component_map[component], outport, m_component_map[other_component], inPort);
+                        m_graph->addEdge(e);
                     }
                 }
             } else {  // find all components whose inputs are connected to this component's output
@@ -151,8 +153,8 @@ void Circuit::generateGraph() {
                     for (auto &wire : wires) {
                         if (wire->canOutputTo(other_component)) {
                             auto inPort = wire->connectedPort(other_component);
-                            m_component_map[component]->addOutGoingConnection(m_component_map[other_component], inPort,
-                                                                              outport);
+                            Edge* e = new Edge(m_component_map[component], outport, m_component_map[other_component], inPort);
+                            m_graph->addEdge(e);
                         }
                     }
                 }
@@ -161,12 +163,8 @@ void Circuit::generateGraph() {
     }
 }
 
-std::vector<Node *> Circuit::getForestRepresentation() const {
-    std::vector<Node*> forest;
-    for (auto& pair : this->m_component_map){
-        forest.push_back(pair.second);
-    }
-    return forest;
+Graph * Circuit::getGraphRepresentation() const {
+    return m_graph;
 }
 
 const std::vector<Component *> &Circuit::getComponents() const {

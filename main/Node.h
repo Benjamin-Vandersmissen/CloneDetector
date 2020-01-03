@@ -41,29 +41,46 @@ public:
     Node(Component* component);
 
     /**
-     * \brief add an outgoing connection from this node to another node
-     * */
-    void addOutGoingConnection(Node *node, unsigned inport, unsigned outport);
-
-    /**
-     * \brief add an incoming connection to this node from another node
-     * */
-    void addIncomingConnection(Node *node, unsigned inport, unsigned outport);
-
-    /**
-     * \brief returns the incoming nodes in the format {{inport, node, outport}..}
-     * */
-    std::vector<std::tuple<unsigned, Node*, unsigned>> getIncomingNodes() const;
-
-    /**
      * \brief Simple getter for the name
      * */
     const std::string &getName() const;
 };
 
+class Edge{
+private:
+    std::pair<Node*, unsigned> m_from;
+
+    std::pair<Node*, unsigned> m_to;
+
+public:
+    Edge(Node* from, unsigned outport, Node* to, unsigned inport);
+
+    const std::pair<Node *, unsigned int> &from() const;
+
+    const std::pair<Node *, unsigned int> &to() const;
+};
+
+class Graph{
+private:
+    std::vector<Node*> m_nodes;
+
+    std::vector<Edge*> m_edges;
+
+public:
+    Graph();
+
+    void addNode(Node* node);
+
+    void addEdge(Edge* edge);
+
+    const std::vector<Node *> &nodes() const;
+
+    const std::vector<Edge *> &edges() const;
+};
+
 /**
  * \brief generate a dot output for forests, plots all the forests in the same stream
  * */
-void plot(std::ostream &stream, const std::vector<std::vector<Node *> > &forest, std::vector<std::string> names);
+void plot(std::ostream &stream, const std::vector<Graph* > &forest, std::vector<std::string> names);
 
 #endif //CLONEDETECTOR_NODE_H

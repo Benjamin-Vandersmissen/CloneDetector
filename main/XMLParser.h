@@ -31,6 +31,8 @@ private:
      * */
     std::map<Component*, Node*> m_component_map;
 
+    Graph* m_graph = nullptr;
+
     /**
      * If the circuit is used as a subcircuit, it is useful to know which Pin corresponds with which input / output
      *
@@ -68,7 +70,7 @@ public:
     /**
      * \brief Return the forest representation for this circuit
      * */
-    std::vector<Node*> getForestRepresentation() const;
+    Graph * getGraphRepresentation() const;
 
     /**
      * \brief Simple getter for the components
@@ -138,9 +140,9 @@ public:
     void generateGraphs();
 
     /**
-     * \brief Get the forest representation for all circuits
+     * \brief Get the graphs for all circuits
      * */
-    std::vector<std::vector<Node*>> getForests() const;
+    std::vector<Graph*> getGraphs() const;
 
     /**
      * \brief Simple getter for the circuits
