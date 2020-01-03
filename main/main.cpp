@@ -17,5 +17,6 @@ int main() {
     }
     plot(file, graphs, names);
     file.close();
+    graphs[0]->findClones();
     return 0;
 }

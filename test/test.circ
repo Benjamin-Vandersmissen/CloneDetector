@@ -58,6 +58,7 @@
     </tool>
     <tool lib="1" name="NOT Gate"/>
     <tool lib="1" name="AND Gate">
+      <a name="facing" val="west"/>
       <a name="inputs" val="2"/>
     </tool>
     <tool lib="1" name="OR Gate"/>
@@ -67,36 +68,74 @@
     <a name="clabel" val=""/>
     <a name="clabelup" val="east"/>
     <a name="clabelfont" val="SansSerif plain 12"/>
-    <wire from="(260,140)" to="(270,140)"/>
-    <wire from="(260,170)" to="(270,170)"/>
-    <wire from="(120,130)" to="(150,130)"/>
-    <wire from="(120,170)" to="(150,170)"/>
-    <wire from="(40,30)" to="(50,30)"/>
-    <wire from="(300,170)" to="(320,170)"/>
-    <wire from="(300,140)" to="(320,140)"/>
-    <wire from="(40,70)" to="(60,70)"/>
-    <wire from="(260,140)" to="(260,150)"/>
-    <wire from="(260,160)" to="(260,170)"/>
-    <wire from="(320,170)" to="(320,180)"/>
-    <comp lib="1" loc="(110,50)" name="AND Gate">
-      <a name="inputs" val="2"/>
-      <a name="negate0" val="true"/>
-    </comp>
-    <comp lib="1" loc="(300,170)" name="NOT Gate"/>
-    <comp lib="1" loc="(300,140)" name="NOT Gate"/>
-    <comp lib="1" loc="(370,160)" name="AND Gate">
+    <wire from="(150,80)" to="(180,80)"/>
+    <wire from="(150,120)" to="(180,120)"/>
+    <wire from="(130,30)" to="(160,30)"/>
+    <wire from="(420,210)" to="(450,210)"/>
+    <wire from="(330,30)" to="(360,30)"/>
+    <wire from="(170,270)" to="(190,270)"/>
+    <wire from="(170,230)" to="(190,230)"/>
+    <wire from="(430,110)" to="(430,150)"/>
+    <wire from="(420,150)" to="(430,150)"/>
+    <wire from="(440,230)" to="(450,230)"/>
+    <wire from="(420,190)" to="(420,210)"/>
+    <wire from="(450,210)" to="(450,230)"/>
+    <wire from="(170,150)" to="(180,150)"/>
+    <wire from="(170,190)" to="(180,190)"/>
+    <comp lib="1" loc="(230,100)" name="AND Gate">
       <a name="inputs" val="2"/>
     </comp>
-    <comp lib="1" loc="(230,150)" name="NOT Gate"/>
-    <comp lib="0" loc="(120,170)" name="Pin">
+    <comp lib="0" loc="(170,190)" name="Pin">
       <a name="tristate" val="false"/>
     </comp>
-    <comp lib="0" loc="(120,130)" name="Pin">
+    <comp lib="0" loc="(330,30)" name="Pin">
       <a name="tristate" val="false"/>
     </comp>
-    <comp loc="(260,150)" name="test"/>
-    <comp lib="1" loc="(200,150)" name="OR Gate">
+    <comp lib="0" loc="(150,80)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
+    <comp lib="1" loc="(370,170)" name="AND Gate">
+      <a name="facing" val="west"/>
       <a name="inputs" val="2"/>
+    </comp>
+    <comp lib="0" loc="(150,120)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
+    <comp lib="0" loc="(170,150)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
+    <comp lib="0" loc="(170,270)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
+    <comp lib="1" loc="(390,30)" name="NOT Gate"/>
+    <comp lib="0" loc="(190,30)" name="Pin">
+      <a name="facing" val="west"/>
+      <a name="output" val="true"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="1" loc="(190,30)" name="NOT Gate"/>
+    <comp lib="0" loc="(430,110)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
+    <comp lib="0" loc="(130,30)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
+    <comp lib="0" loc="(390,30)" name="Pin">
+      <a name="facing" val="west"/>
+      <a name="output" val="true"/>
+      <a name="labelloc" val="east"/>
+    </comp>
+    <comp lib="1" loc="(240,250)" name="AND Gate">
+      <a name="inputs" val="2"/>
+    </comp>
+    <comp lib="1" loc="(230,170)" name="AND Gate">
+      <a name="inputs" val="2"/>
+    </comp>
+    <comp lib="0" loc="(170,230)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
+    <comp lib="0" loc="(440,230)" name="Pin">
+      <a name="tristate" val="false"/>
     </comp>
   </circuit>
   <circuit name="test">

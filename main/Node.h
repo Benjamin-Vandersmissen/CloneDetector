@@ -26,11 +26,7 @@ class Node {
 private:
     std::string m_name;
 
-    // inport : (Node, outport)
-    std::map<unsigned, std::pair<Node*, unsigned> > m_incoming_nodes;
-
-    // outport : (Node, inport)
-    std::map<unsigned, std::pair<Node*, unsigned> > m_outgoing_nodes;
+    Component* m_component;
 
 public:
     // name : occurences
@@ -44,6 +40,8 @@ public:
      * \brief Simple getter for the name
      * */
     const std::string &getName() const;
+
+    Component *component() const;
 };
 
 class Edge{
@@ -60,23 +58,54 @@ public:
     const std::pair<Node *, unsigned int> &to() const;
 };
 
+class SubGraph;
+
 class Graph{
-private:
+protected:
     std::vector<Node*> m_nodes;
 
     std::vector<Edge*> m_edges;
 
+    std::map<unsigned, std::vector< std::vector<SubGraph*> > > m_cloneGroups;
 public:
     Graph();
 
     void addNode(Node* node);
 
-    void addEdge(Edge* edge);
+    virtual void addEdge(Edge* edge);
 
     const std::vector<Node *> &nodes() const;
 
     const std::vector<Edge *> &edges() const;
+
+    void findClones();
+
+    std::vector<SubGraph *> prune(std::vector<SubGraph *> subs, unsigned iteration);
+
+    std::vector<SubGraph*> extend(std::vector<SubGraph*> subs, unsigned iteration);
 };
+
+class SubGraph : public Graph{
+private:
+    std::map<Node*, std::string> m_mapping;
+
+    std::map<std::string, unsigned> m_counter;
+public:
+    SubGraph(Edge* edge);
+
+    bool canConnect(Edge* edge);
+
+    void addEdge(Edge* edge) override;
+
+    std::string representation() const;
+
+    void remap();
+
+    static bool compareEdges(Edge* e1, Edge* e2);
+
+};
+
+bool overlap(SubGraph *sg1, SubGraph* sg2);
 
 /**
  * \brief generate a dot output for forests, plots all the forests in the same stream
