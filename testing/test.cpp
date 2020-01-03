@@ -503,48 +503,36 @@ TEST(CorrectConnections, simpleConnection){
     parser.parse();
     parser.generateGraphs();
     auto circuit = parser.getCircuits()[0];
-    auto forest = circuit.getForestRepresentation();
+    auto graph = circuit.getGraphRepresentation();
+    auto edges = graph->edges();
 
-    { //output pin has incoming connection from AND Gate
-        auto node = forest[0];
-        ASSERT_EQ(node->getName(), "Pin_0");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 1);
-        auto tuple = incoming[0];
-        ASSERT_EQ(std::get<0>(tuple), 0);
-        ASSERT_EQ(std::get<1>(tuple)->getName(), "AND Gate_0");
-        ASSERT_EQ(std::get<2>(tuple), 0);
+    ASSERT_EQ(edges.size(), 3);
+
+    {    //Pin_1 -> AND Gate_0 (0/0)
+        auto edge = edges[0];
+        ASSERT_EQ(edge->from().first->getName(), "Pin_1");
+        ASSERT_EQ(edge->to().first->getName(), "AND Gate_0");
+
+        ASSERT_EQ(edge->from().second, 0);
+        ASSERT_EQ(edge->to().second, 0);
     }
 
-    { //input pin 1 has no incoming connections
-        auto node = forest[1];
-        ASSERT_EQ(node->getName(), "Pin_1");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 0);
+    {    //AND Gate_0 -> Pin_0 (0/0)
+        auto edge = edges[1];
+        ASSERT_EQ(edge->from().first->getName(), "AND Gate_0");
+        ASSERT_EQ(edge->to().first->getName(), "Pin_0");
+
+        ASSERT_EQ(edge->from().second, 0);
+        ASSERT_EQ(edge->to().second, 0);
     }
 
-    { //AND gate has 2 incoming connections
-        auto node = forest[2];
-        ASSERT_EQ(node->getName(), "AND Gate_0");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 2);
+    {    //Pin_2 -> AND Gate_0 (0/1)
+        auto edge = edges[2];
+        ASSERT_EQ(edge->from().first->getName(), "Pin_2");
+        ASSERT_EQ(edge->to().first->getName(), "AND Gate_0");
 
-        auto tuple = incoming[0];
-        ASSERT_EQ(std::get<0>(tuple), 0);
-        ASSERT_EQ(std::get<1>(tuple)->getName(), "Pin_1");
-        ASSERT_EQ(std::get<2>(tuple), 0);
-
-        tuple = incoming[1];
-        ASSERT_EQ(std::get<0>(tuple), 1);
-        ASSERT_EQ(std::get<1>(tuple)->getName(), "Pin_2");
-        ASSERT_EQ(std::get<2>(tuple), 0);
-    }
-
-    { //input pin 2 has no incoming connections
-        auto node = forest[3];
-        ASSERT_EQ(node->getName(), "Pin_2");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 0);
+        ASSERT_EQ(edge->from().second, 0);
+        ASSERT_EQ(edge->to().second, 1);
     }
 }
 
@@ -553,97 +541,75 @@ TEST(CorrectConnections, complicatedConnection){
     parser.parse();
     parser.generateGraphs();
     auto circuit = parser.getCircuits()[0];
-    auto forest = circuit.getForestRepresentation();
+    auto graph = circuit.getGraphRepresentation();
 
-    { //output pin has incoming connection from AND Gate
-        auto node = forest[0];
-        ASSERT_EQ(node->getName(), "Pin_0");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 1);
-        auto tuple = incoming[0];
-        ASSERT_EQ(std::get<0>(tuple), 0);
-        ASSERT_EQ(std::get<1>(tuple)->getName(), "AND Gate_0");
-        ASSERT_EQ(std::get<2>(tuple), 0);
+    auto edges = graph->edges();
+
+    ASSERT_EQ(edges.size(), 3);
+
+    {    // Pin_1 -> AND Gate_0 (0/1)
+        auto edge = edges[0];
+        ASSERT_EQ(edge->from().first->getName(), "Pin_1");
+        ASSERT_EQ(edge->to().first->getName(), "AND Gate_0");
+
+        ASSERT_EQ(edge->from().second, 0);
+        ASSERT_EQ(edge->to().second, 1);
     }
 
-    { //input pin 2 has no incoming connections
-        auto node = forest[1];
-        ASSERT_EQ(node->getName(), "Pin_1");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 0);
+    {    // Pin_2 -> AND Gate_0 (0/0)
+        auto edge = edges[1];
+        ASSERT_EQ(edge->from().first->getName(), "Pin_2");
+        ASSERT_EQ(edge->to().first->getName(), "AND Gate_0");
+
+        ASSERT_EQ(edge->from().second, 0);
+        ASSERT_EQ(edge->to().second, 0);
     }
 
-    { //input pin 1 has no incoming connections
-        auto node = forest[2];
-        ASSERT_EQ(node->getName(), "Pin_2");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 0);
-    }
+    {    // AND Gate_0 -> Pin_0 (0/0)
+        auto edge = edges[2];
+        ASSERT_EQ(edge->from().first->getName(), "AND Gate_0");
+        ASSERT_EQ(edge->to().first->getName(), "Pin_0");
 
-    { //AND gate has 2 incoming connections
-        auto node = forest[3];
-        ASSERT_EQ(node->getName(), "AND Gate_0");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 2);
-
-        auto tuple = incoming[0];
-        ASSERT_EQ(std::get<0>(tuple), 0);
-        ASSERT_EQ(std::get<1>(tuple)->getName(), "Pin_2");
-        ASSERT_EQ(std::get<2>(tuple), 0);
-
-        tuple = incoming[1];
-        ASSERT_EQ(std::get<0>(tuple), 1);
-        ASSERT_EQ(std::get<1>(tuple)->getName(), "Pin_1");
-        ASSERT_EQ(std::get<2>(tuple), 0);
+        ASSERT_EQ(edge->from().second, 0);
+        ASSERT_EQ(edge->to().second, 0);
     }
 }
+
 TEST(CorrectConnections, directConnection) {
     XMLParser parser("./circuits/directConnection.circ");
     parser.parse();
     parser.generateGraphs();
     auto circuit = parser.getCircuits()[0];
-    auto forest = circuit.getForestRepresentation();
+    auto graph = circuit.getGraphRepresentation();
+    auto edges = graph->edges();
 
-    { //output pin has incoming connection from AND Gate
-        auto node = forest[0];
-        ASSERT_EQ(node->getName(), "Pin_0");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 1);
-        auto tuple = incoming[0];
-        ASSERT_EQ(std::get<0>(tuple), 0);
-        ASSERT_EQ(std::get<1>(tuple)->getName(), "AND Gate_0");
-        ASSERT_EQ(std::get<2>(tuple), 0);
+    ASSERT_EQ(edges.size(), 3);
+
+    {    //Pin_1 -> AND Gate_0 (0/1)
+        auto edge = edges[0];
+        ASSERT_EQ(edge->from().first->getName(), "Pin_1");
+        ASSERT_EQ(edge->to().first->getName(), "AND Gate_0");
+
+        ASSERT_EQ(edge->from().second, 0);
+        ASSERT_EQ(edge->to().second, 1);
     }
 
-    { //AND gate has 2 incoming connections
-        auto node = forest[1];
-        ASSERT_EQ(node->getName(), "AND Gate_0");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 2);
+    {    // Pin_2 -> AND Gate_0 (0/0)
+        auto edge = edges[1];
+        ASSERT_EQ(edge->from().first->getName(), "Pin_2");
+        ASSERT_EQ(edge->to().first->getName(), "AND Gate_0");
 
-        auto tuple = incoming[0];
-        ASSERT_EQ(std::get<0>(tuple), 0);
-        ASSERT_EQ(std::get<1>(tuple)->getName(), "Pin_2");
-        ASSERT_EQ(std::get<2>(tuple), 0);
-
-        tuple = incoming[1];
-        ASSERT_EQ(std::get<0>(tuple), 1);
-        ASSERT_EQ(std::get<1>(tuple)->getName(), "Pin_1");
-        ASSERT_EQ(std::get<2>(tuple), 0);
+        ASSERT_EQ(edge->from().second, 0);
+        ASSERT_EQ(edge->to().second, 0);
     }
 
-    { //input pin 2 has no incoming connections
-        auto node = forest[2];
-        ASSERT_EQ(node->getName(), "Pin_1");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 0);
-    }
+    {    // AND Gate_0 -> Pin_0 (0/0)
+        auto edge = edges[2];
+        ASSERT_EQ(edge->from().first->getName(), "AND Gate_0");
+        ASSERT_EQ(edge->to().first->getName(), "Pin_0");
 
-    { //input pin 1 has no incoming connections
-        auto node = forest[3];
-        ASSERT_EQ(node->getName(), "Pin_2");
-        auto incoming = node->getIncomingNodes();
-        ASSERT_EQ(incoming.size(), 0);
+        ASSERT_EQ(edge->from().second, 0);
+        ASSERT_EQ(edge->to().second, 0);
     }
 }
 
