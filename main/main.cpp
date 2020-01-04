@@ -4,9 +4,9 @@
 
 int main() {
 
-    //TODO: - better clone feedback (maybe in the dot output?)
     //TODO: - testing!!!
     //TODO: - comments in Node.h
+    //TODO: - detect clones in vector of Graphs (easiest way is to convert it to 1 graph and keep track in which
 
     XMLParser parser("./test/test.circ");
     parser.parse();
@@ -20,5 +20,8 @@ int main() {
     plot(file, graphs, names);
     file.close();
     graphs[0]->findClones();
+
+    std::ofstream file2("./test2.dot");
+    plot_clones(file2, graphs, names);
     return 0;
 }

@@ -90,6 +90,10 @@ public:
     std::vector<SubGraph> extend(const std::vector<SubGraph> &subs, unsigned iteration);
 
     void removeCoveredGroups(unsigned iteration);
+
+    const std::map<unsigned int, std::vector<std::pair<std::string, std::vector<SubGraph>>>> &getCloneGroups() const;
+
+    std::vector<std::vector<SubGraph>> getAllCloneGroups() const;
 };
 
 class SubGraph : public Graph{
@@ -119,6 +123,8 @@ bool covers(const SubGraph &sg, const std::vector<SubGraph>& cover);
 /**
  * \brief generate a dot output for forests, plots all the forests in the same stream
  * */
-void plot(std::ostream &stream, const std::vector<Graph* > &forest, std::vector<std::string> names);
+void plot(std::ostream &stream, const std::vector<Graph* > &graphs, std::vector<std::string> names);
+
+void plot_clones(std::ostream& stream, const std::vector<Graph*>& graphs, std::vector<std::string> names);
 
 #endif //CLONEDETECTOR_NODE_H

@@ -54,6 +54,44 @@ void plot(std::ostream &stream, const std::vector<Graph*> &graphs, std::vector<s
     stream << "}";
 }
 
+void plot_clones(std::ostream &stream, const std::vector<Graph *> &graphs, std::vector<std::string> names) {
+    stream << "digraph Circuit{\n";
+    auto name_it = names.begin();
+    for (const auto& graph : graphs){
+        stream << "subgraph cluster_" << *name_it << " {\n";
+        for(const auto& node: graph->nodes())
+            stream << "\"" << node->getName() << "\";\n";
+
+        auto clone_id = 0;
+        auto cluster_id = 0;
+        auto clone_groups = graph->getAllCloneGroups();
+        std::vector<edge_ptr > visited_edges;
+        for(const auto& clones : clone_groups){
+            for(const auto& subgraph : clones){
+                stream << "subgraph cluster_" << cluster_id << " {\n";
+                stream << "color=red\n";
+                cluster_id++;
+                const auto& edges = subgraph.edges();
+                for(const auto& edge : edges)
+                    stream <<"\"" <<  edge->from().first->getName() << "\" -> \"" << edge->to().first->getName() << "\" [label=\"" << edge->from().second << "/" << edge->to().second << "\"];\n";
+                visited_edges.insert(visited_edges.end(), edges.begin(), edges.end());
+                stream << "label=\"clone " << clone_id << "\"\n";
+                stream << "}\n";
+            }
+            clone_id++;
+        }
+
+//        for(const auto& edge: graph->edges()){
+//            stream <<"\"" <<  edge->from().first->getName() << "\" -> \"" << edge->to().first->getName() << "\" [label=\"" << edge->from().second << "/" << edge->to().second << "\"];\n";
+//        }
+
+        stream << "label=\"Circuit: " << *name_it << "\"\n";
+        std::advance(name_it, 1);
+        stream << "}\n";
+    }
+    stream << "}";
+}
+
 Edge::Edge(node_ptr from, unsigned outport, node_ptr to, unsigned inport): m_from{from, outport}, m_to{to, inport} {}
 
 const std::pair<node_ptr, unsigned int> & Edge::from() const {
@@ -171,7 +209,22 @@ void Graph::removeCoveredGroups(unsigned iteration) {
     for(auto index : to_delete){
         previousGroups.erase(previousGroups.begin()+index);
     }
-    if(previousGroups.size() == 0)  this->m_cloneGroups.erase(iteration-1);
+    if(previousGroups.empty())  this->m_cloneGroups.erase(iteration-1);
+}
+
+const std::map<unsigned int, std::vector<std::pair<std::string, std::vector<SubGraph>>>> &
+Graph::getCloneGroups() const {
+    return m_cloneGroups;
+}
+
+std::vector<std::vector<SubGraph>> Graph::getAllCloneGroups() const {
+    std::vector<std::vector<SubGraph>> clones;
+    for(const auto& pair : m_cloneGroups){ // all clone groups with same iteration
+        for(const auto& group : pair.second){ // a clone group
+            clones.push_back(group.second);
+        }
+    }
+    return clones;
 }
 
 SubGraph::SubGraph(edge_ptr edge) {
