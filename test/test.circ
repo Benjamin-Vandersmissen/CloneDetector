@@ -73,6 +73,7 @@
     <wire from="(130,30)" to="(160,30)"/>
     <wire from="(420,210)" to="(450,210)"/>
     <wire from="(330,30)" to="(360,30)"/>
+    <wire from="(40,310)" to="(60,310)"/>
     <wire from="(170,270)" to="(190,270)"/>
     <wire from="(170,230)" to="(190,230)"/>
     <wire from="(430,110)" to="(430,150)"/>
@@ -91,10 +92,18 @@
     <comp lib="0" loc="(130,30)" name="Pin">
       <a name="tristate" val="false"/>
     </comp>
+    <comp lib="0" loc="(60,310)" name="Pin">
+      <a name="facing" val="west"/>
+      <a name="output" val="true"/>
+      <a name="labelloc" val="east"/>
+    </comp>
     <comp lib="1" loc="(230,100)" name="AND Gate">
       <a name="inputs" val="2"/>
     </comp>
     <comp lib="0" loc="(170,190)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
+    <comp lib="0" loc="(40,310)" name="Pin">
       <a name="tristate" val="false"/>
     </comp>
     <comp lib="0" loc="(170,230)" name="Pin">
@@ -168,5 +177,20 @@
     <a name="clabel" val=""/>
     <a name="clabelup" val="east"/>
     <a name="clabelfont" val="SansSerif plain 12"/>
+    <wire from="(180,230)" to="(340,230)"/>
+    <wire from="(180,230)" to="(180,240)"/>
+    <wire from="(180,160)" to="(180,200)"/>
+    <wire from="(110,160)" to="(180,160)"/>
+    <comp lib="0" loc="(110,160)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
+    <comp lib="1" loc="(130,220)" name="AND Gate">
+      <a name="facing" val="west"/>
+      <a name="inputs" val="2"/>
+    </comp>
+    <comp lib="0" loc="(340,230)" name="Pin">
+      <a name="facing" val="north"/>
+      <a name="tristate" val="false"/>
+    </comp>
   </circuit>
 </project>

@@ -6,7 +6,6 @@ int main() {
 
     //TODO: - testing!!!
     //TODO: - comments in Node.h
-    //TODO: - detect clones in vector of Graphs (easiest way is to convert it to 1 graph and keep track in which
 
     XMLParser parser("./test/test.circ");
     parser.parse();
@@ -22,6 +21,6 @@ int main() {
     graphs[0]->findClones();
 
     std::ofstream file2("./test2.dot");
-    plot_clones(file2, graphs, names);
+    plot_clones(file2, graphs, names, false);
     return 0;
 }

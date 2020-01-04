@@ -94,7 +94,11 @@ public:
     const std::map<unsigned int, std::vector<std::pair<std::string, std::vector<SubGraph>>>> &getCloneGroups() const;
 
     std::vector<std::vector<SubGraph>> getAllCloneGroups() const;
+
+    friend std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*>& graphs);
 };
+
+std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*>& graphs);
 
 class SubGraph : public Graph{
 private:
@@ -125,6 +129,7 @@ bool covers(const SubGraph &sg, const std::vector<SubGraph>& cover);
  * */
 void plot(std::ostream &stream, const std::vector<Graph* > &graphs, std::vector<std::string> names);
 
-void plot_clones(std::ostream& stream, const std::vector<Graph*>& graphs, std::vector<std::string> names);
+void
+plot_clones(std::ostream &stream, const std::vector<Graph *> &graphs, std::vector<std::string> names, bool onlyClones=false);
 
 #endif //CLONEDETECTOR_NODE_H

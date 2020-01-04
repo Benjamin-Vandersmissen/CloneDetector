@@ -54,36 +54,57 @@ void plot(std::ostream &stream, const std::vector<Graph*> &graphs, std::vector<s
     stream << "}";
 }
 
-void plot_clones(std::ostream &stream, const std::vector<Graph *> &graphs, std::vector<std::string> names) {
+//TODO: fix for overlapping clones
+void
+plot_clones(std::ostream &stream, const std::vector<Graph *> &graphs, std::vector<std::string> names, bool onlyClones) {
     stream << "digraph Circuit{\n";
     auto name_it = names.begin();
-    for (const auto& graph : graphs){
-        stream << "subgraph cluster_" << *name_it << " {\n";
-        for(const auto& node: graph->nodes())
-            stream << "\"" << node->getName() << "\";\n";
+    auto clone_groups = getCloneGroups(graphs);
 
-        auto clone_id = 0;
-        auto cluster_id = 0;
-        auto clone_groups = graph->getAllCloneGroups();
-        std::vector<edge_ptr > visited_edges;
-        for(const auto& clones : clone_groups){
-            for(const auto& subgraph : clones){
-                stream << "subgraph cluster_" << cluster_id << " {\n";
-                stream << "color=red\n";
-                cluster_id++;
-                const auto& edges = subgraph.edges();
-                for(const auto& edge : edges)
-                    stream <<"\"" <<  edge->from().first->getName() << "\" -> \"" << edge->to().first->getName() << "\" [label=\"" << edge->from().second << "/" << edge->to().second << "\"];\n";
-                visited_edges.insert(visited_edges.end(), edges.begin(), edges.end());
-                stream << "label=\"clone " << clone_id << "\"\n";
-                stream << "}\n";
+    std::map<unsigned, unsigned> clone_to_group;
+    std::map<unsigned, std::vector<edge_ptr> > clone_to_edges;
+    std::map<Graph*, std::vector<unsigned> > graph_to_clones;
+
+    std::vector<edge_ptr> clone_edges;
+
+    auto clone_id = 0;
+    for(unsigned group_id = 0; group_id < clone_groups.size(); ++ group_id){
+        auto clone_group = clone_groups[group_id];
+        for(const auto& subgraph : clone_group){
+            clone_to_group[clone_id] = group_id;
+            clone_to_edges[clone_id] = subgraph.edges();
+            clone_edges.insert(clone_edges.begin(), subgraph.edges().begin(), subgraph.edges().end());
+            for(const auto& graph : graphs){
+                if (! intersection(graph->edges(), subgraph.edges()).empty()) {
+                    graph_to_clones[graph].push_back(clone_id);
+                    break;
+                }
             }
             clone_id++;
         }
+    }
+    for (const auto& graph : graphs){
+        stream << "subgraph cluster_" << *name_it << " {\n";
+        for(const auto& node: graph->nodes()) {
+            if (!onlyClones)
+                stream << "\"" << node->getName() << "\";\n";
+        }
 
-//        for(const auto& edge: graph->edges()){
-//            stream <<"\"" <<  edge->from().first->getName() << "\" -> \"" << edge->to().first->getName() << "\" [label=\"" << edge->from().second << "/" << edge->to().second << "\"];\n";
-//        }
+        auto clones = graph_to_clones[graph];
+        for(auto clone : clones){
+            stream << "subgraph cluster_" << clone << " {\n";
+            stream << "label=\"Clone " << clone_to_group[clone] << "\"\n";
+            stream << "color=red\n";
+            for(const auto& edge : clone_to_edges[clone]){
+                stream <<"\"" <<  edge->from().first->getName() << "\" -> \"" << edge->to().first->getName() << "\" [label=\"" << edge->from().second << "/" << edge->to().second << "\"];\n";
+            }
+            stream << "}\n";
+        }
+
+        for(const auto& edge: graph->edges()){
+            if (!onlyClones and ! contains(clone_edges, edge))
+                stream <<"\"" <<  edge->from().first->getName() << "\" -> \"" << edge->to().first->getName() << "\" [label=\"" << edge->from().second << "/" << edge->to().second << "\"];\n";
+        }
 
         stream << "label=\"Circuit: " << *name_it << "\"\n";
         std::advance(name_it, 1);
@@ -188,7 +209,7 @@ void Graph::removeCoveredGroups(unsigned iteration) {
     std::vector<std::size_t > to_delete;
 
     for(auto i = 0; i  < previousGroups.size(); ++i){
-        for(auto j = std::min(i, int(currentGroups.size())); j >= 0; --j){
+        for(auto j = std::min(i, int(currentGroups.size()-1)); j >= 0; --j){
             auto group1 = previousGroups[i];
             auto group2 = currentGroups[j];
             if(group1.second.size() > group2.second.size()) // All clones from the previous iteration need to be in the current iteration for a full cover
@@ -303,4 +324,14 @@ bool covers(const SubGraph &sg, const std::vector<SubGraph> &cover) {
     }
 
     return false;
+}
+
+std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*> &graphs) {
+    Graph total_graph;
+    for(const auto& graph: graphs){
+        total_graph.m_edges.insert(total_graph.m_edges.begin(), graph->m_edges.begin(), graph->m_edges.end());
+        total_graph.m_nodes.insert(total_graph.m_nodes.begin(), graph->m_nodes.begin(), graph->m_nodes.end());
+    }
+    total_graph.findClones();
+    return total_graph.getAllCloneGroups();
 }
