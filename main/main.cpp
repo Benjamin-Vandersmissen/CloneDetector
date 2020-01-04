@@ -4,7 +4,9 @@
 
 int main() {
 
-    //TODO: use smart pointers everywhere
+    //TODO: - better clone feedback (maybe in the dot output?)
+    //TODO: - testing!!!
+    //TODO: - comments in Node.h
 
     XMLParser parser("./test/test.circ");
     parser.parse();

@@ -70,7 +70,8 @@ protected:
 
     std::vector<edge_ptr> m_edges;
 
-    std::map<unsigned, std::vector< std::vector<SubGraph> > > m_cloneGroups;
+    // # edges : {representation : clones, ... }
+    std::map<unsigned, std::vector< std::pair<std::string, std::vector<SubGraph> > > > m_cloneGroups;
 public:
     Graph();
 
@@ -87,6 +88,8 @@ public:
     std::vector<SubGraph> prune(const std::vector<SubGraph> &subs, unsigned iteration);
 
     std::vector<SubGraph> extend(const std::vector<SubGraph> &subs, unsigned iteration);
+
+    void removeCoveredGroups(unsigned iteration);
 };
 
 class SubGraph : public Graph{
@@ -110,6 +113,8 @@ public:
 };
 
 bool overlap(const SubGraph &sg1, const SubGraph &sg2);
+
+bool covers(const SubGraph &sg, const std::vector<SubGraph>& cover);
 
 /**
  * \brief generate a dot output for forests, plots all the forests in the same stream

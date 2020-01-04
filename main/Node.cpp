@@ -92,9 +92,11 @@ void Graph::findClones() {
         subgraphs.emplace_back(edge);
     }
     auto iteration = 0;
-    while(m_cloneGroups.size() == iteration) { //TODO: remove clonegroup if it is a subgroup of a larger clonegroup
+    while(m_cloneGroups.size() == iteration) {
         subgraphs = prune(subgraphs, iteration);
+        if(subgraphs.empty()) return;   // No potential clone pairs anymore
         subgraphs = extend(subgraphs, iteration);
+        if (iteration > 0) removeCoveredGroups(iteration);
         iteration ++;
     }
 }
@@ -114,7 +116,7 @@ std::vector<SubGraph> Graph::prune(const std::vector<SubGraph> &subs, unsigned i
 
     for(auto pair : mapping){
         if(pair.second.size() > 1){
-            m_cloneGroups[iteration].push_back(pair.second);
+            m_cloneGroups[iteration].push_back(pair);
             retValue.insert(retValue.end(), pair.second.begin(), pair.second.end());
         }
     }
@@ -133,6 +135,43 @@ std::vector<SubGraph> Graph::extend(const std::vector<SubGraph> &subs, unsigned 
         }
     }
     return retValue;
+}
+
+void Graph::removeCoveredGroups(unsigned iteration) {
+    auto& previousGroups = m_cloneGroups[iteration-1];
+    auto& currentGroups = m_cloneGroups[iteration];
+
+    // size(previousGroups) >= size(currentGroups) => if currentGroups[j] doesn't cover previousGroups[i] ( j <= i), no currentGroup covers it
+    /*
+     * Why? -> ideal case: previousGroups[i] is extended in currentGroups[i] (Every preceding i is extended as well)
+     *      -> previousGroups[i] is extended in currentGroups[j], j < i (Some preceding i aren't extended / this group has merged with another group that is already extended in a currentGroup)
+     * */
+
+    std::vector<std::size_t > to_delete;
+
+    for(auto i = 0; i  < previousGroups.size(); ++i){
+        for(auto j = std::min(i, int(currentGroups.size())); j >= 0; --j){
+            auto group1 = previousGroups[i];
+            auto group2 = currentGroups[j];
+            if(group1.second.size() > group2.second.size()) // All clones from the previous iteration need to be in the current iteration for a full cover
+                continue;
+
+            bool covered = true;
+            for(const auto& subgraph : group1.second){
+                covered &= covers(subgraph, group2.second);
+                if (!covered)   break;
+            }
+            if (covered){
+                to_delete.push_back(i);
+                break;
+            }
+        }
+    }
+    std::reverse(to_delete.begin(), to_delete.end());
+    for(auto index : to_delete){
+        previousGroups.erase(previousGroups.begin()+index);
+    }
+    if(previousGroups.size() == 0)  this->m_cloneGroups.erase(iteration-1);
 }
 
 SubGraph::SubGraph(edge_ptr edge) {
@@ -203,4 +242,12 @@ bool SubGraph::compareEdges(const edge_ptr &e1, const edge_ptr &e2) {
 
 bool overlap(const SubGraph &sg1, const SubGraph &sg2) {
     return ! intersection(sg1.edges(), sg2.edges()).empty();
+}
+
+bool covers(const SubGraph &sg, const std::vector<SubGraph> &cover) {
+    for (const auto& sg2 : cover){
+        if (intersection(sg.edges(), sg2.edges()).size() == sg.edges().size()) return true;
+    }
+
+    return false;
 }
