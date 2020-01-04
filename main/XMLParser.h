@@ -22,14 +22,14 @@ class Circuit{
 private:
     std::vector<Wire> m_wires;
 
-    std::vector<Component*> m_components;
+    std::vector<component_ptr> m_components;
 
     std::string m_name;
 
     /**
      * Maps all the components in the circuit to a node for the graph representation
      * */
-    std::map<Component*, Node*> m_component_map;
+    std::map<component_ptr , node_ptr> m_component_map;
 
     Graph* m_graph = nullptr;
 
@@ -38,9 +38,9 @@ private:
      *
      * These vectors are ordered, entry 0 is the first in/ output, entry i is the (i+1)th in/ output
      * */
-    std::vector<Component*> m_inputs;
+    std::vector<component_ptr> m_inputs;
 
-    std::vector<Component*> m_outputs;
+    std::vector<component_ptr> m_outputs;
 
 public:
     Circuit(std::string  name);
@@ -75,7 +75,7 @@ public:
     /**
      * \brief Simple getter for the components
      * */
-    const std::vector<Component *> &getComponents() const;
+    const std::vector<component_ptr> &getComponents() const;
 
     /**
      * \brief This calculates the number of in/out ports for a circuit in case it will be used as a subcircuit later

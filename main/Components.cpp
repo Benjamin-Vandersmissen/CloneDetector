@@ -21,11 +21,11 @@ bool Wire::canConnectTo(const Wire &wire)  const{
     return ! intersection(wire.m_points, m_points).empty();
 }
 
-bool Wire::canOutputTo(const Component *component) const {
+bool Wire::canOutputTo(const component_ptr component) const {
     return ! intersection(component->m_in, m_points).empty();
 }
 
-int Wire::connectedPort(const Component *component) const {
+int Wire::connectedPort(const component_ptr component) const {
     if (contains(component->m_in, m_points[0]))  // TODO: this if statement is not very correct, because m_in is private
         return component->indexOfInPort(m_points[0]);
     else
@@ -48,7 +48,7 @@ bool Component::canOutputTo(const Wire &wire, unsigned long outport) const {
     return contains(wire.m_points, m_out[outport]);
 }
 
-bool Component::canOutputTo(const Component *component, unsigned outport) const{
+bool Component::canOutputTo(const component_ptr component, unsigned outport) const{
     return contains(component->m_in, m_out[outport]);
 }
 
@@ -56,7 +56,7 @@ const std::string &Component::name() const {
     return m_name;
 }
 
-int Component::connectedInPort(const Component *component, int outport) const {
+int Component::connectedInPort(const component_ptr component, int outport) const {
     auto val = component->indexOfInPort(m_out[outport]);
     if (val != -1) return val;
     return -1;
@@ -219,17 +219,17 @@ void GateComponent::calculatePorts() {
 
 GateComponent::GateComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name, loc) {}
 
-Component *createComponent(int lib, const std::string &name, const std::string &loc) {
+component_ptr createComponent(int lib, const std::string &name, const std::string &loc) {
     if (lib == 1 and (name == "AND Gate" or name == "OR Gate" or name == "NAND Gate" or name == "NOR Gate" or name == "XOR Gate" or name == "XNOR Gate"))
-        return new GateComponent(lib, name, loc);
+        return std::make_shared<GateComponent>(lib, name, loc);
 
     if (lib == 1 and (name == "NOT Gate"))
-        return new NotComponent(lib, name, loc);
+        return std::make_shared<NotComponent>(lib, name, loc);
 
     if (lib == 0 and (name == "Pin"))
-        return new PinComponent(lib, name, loc);
+        return std::make_shared<PinComponent>(lib, name, loc);
     if (lib == -1)
-        return new CircuitComponent(lib, name, loc);
+        return std::make_shared<CircuitComponent>(lib, name, loc);
     return nullptr;
 }
 
@@ -273,7 +273,7 @@ void NotComponent::calculatePorts() {
     m_in.push_back(relative_center);
 }
 
-bool sortPorts(const Component* comp1, const Component* comp2){
+bool sortPorts(const component_ptr comp1, const component_ptr comp2){
     if(comp1->m_loc.second < comp2->m_loc.second)
         return true;
     else if (comp1->m_loc.first < comp2->m_loc.first and comp1->m_loc.second == comp2->m_loc.second)

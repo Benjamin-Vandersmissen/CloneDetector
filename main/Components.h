@@ -7,10 +7,13 @@
 
 #include "Utility.h"
 #include <map>
+#include <memory>
 // circuit name : nr inputs, nr outputs
+
 extern std::map<std::string, std::pair<int, int> > circuit_port_map;
 
 class Component;
+using component_ptr = std::shared_ptr<Component>;
 
 class GateComponent;
 
@@ -39,14 +42,14 @@ public:
      *
      * Do this by intersecting the point vector of the wire with the inports vector of the Component
      * */
-    bool canOutputTo(const Component *component) const;
+    bool canOutputTo(const component_ptr component) const;
 
     /**
      * \brief Find the input port this wire is connected to.
      *
      * Returns the index instead of the position
      * */
-    int connectedPort(const Component *component) const;
+    int connectedPort(const component_ptr component) const;
 };
 
 class Component{
@@ -108,7 +111,7 @@ public:
     /**
      * \brief Test if a connection can be made with a component on the given outport
      * */
-    bool canOutputTo(const Component *component, unsigned outport=0) const;
+    bool canOutputTo(const component_ptr component, unsigned outport= 0) const;
 
     /**
      * \brief Simple getter for m_name
@@ -118,7 +121,7 @@ public:
     /**
      * \brief Find the index of the inport the given outport of the component is connected to
      * */
-    int connectedInPort(const Component *component, int outport) const;
+    int connectedInPort(const component_ptr component, int outport) const;
 
     /**
      * \brief converts a coordinate of an inport to its index
@@ -130,13 +133,13 @@ public:
      * */
     const std::vector<Coordinate> &getInputPorts() const;
 
-    friend bool sortPorts(const Component* comp1, const Component* comp2);
+    friend bool sortPorts(const component_ptr comp1, const component_ptr comp2);
 };
 
 /**
  * \brief Sorts 2 coordinates, first descending on y-value, then in case of same y-value, on x-value
  * */
-bool sortPorts(const Component* comp1, const Component* comp2);
+bool sortPorts(const component_ptr comp1, const component_ptr comp2);
 
 // AND, OR, NAND, NOR, XOR, XNOR
 class GateComponent : public Component{
@@ -195,5 +198,5 @@ public:
 /**
  * \brief Creates a component based on some parameter, Uses the correct SubClass for the component
  * */
-Component* createComponent(int lib, const std::string &name, const std::string &loc);
+component_ptr createComponent(int lib, const std::string &name, const std::string &loc);
 #endif //CLONEDETECTOR_COMPONENTS_H

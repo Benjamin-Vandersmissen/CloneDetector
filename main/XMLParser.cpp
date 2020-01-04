@@ -112,7 +112,7 @@ void Circuit::generateGraph() {
     m_graph = new Graph();
     for(auto& component : m_components){
         component->calculatePorts();
-        m_component_map[component] = new Node(component);
+        m_component_map[component] = std::make_shared<Node>(component);
         m_graph->addNode(m_component_map[component]);
     }
     for (auto & component : m_components){
@@ -144,7 +144,7 @@ void Circuit::generateGraph() {
                 for (auto & other_component : m_components) {
                     if (component->canOutputTo(other_component, outport)) {
                         auto inPort = component->connectedInPort(other_component, outport);
-                        Edge* e = new Edge(m_component_map[component], outport, m_component_map[other_component], inPort);
+                        auto e = std::make_shared<Edge>(m_component_map[component], outport, m_component_map[other_component], inPort);
                         m_graph->addEdge(e);
                     }
                 }
@@ -153,7 +153,7 @@ void Circuit::generateGraph() {
                     for (auto &wire : wires) {
                         if (wire->canOutputTo(other_component)) {
                             auto inPort = wire->connectedPort(other_component);
-                            Edge* e = new Edge(m_component_map[component], outport, m_component_map[other_component], inPort);
+                            auto e = std::make_shared<Edge>(m_component_map[component], outport, m_component_map[other_component], inPort);
                             m_graph->addEdge(e);
                         }
                     }
@@ -167,7 +167,7 @@ Graph * Circuit::getGraphRepresentation() const {
     return m_graph;
 }
 
-const std::vector<Component *> &Circuit::getComponents() const {
+const std::vector<component_ptr> &Circuit::getComponents() const {
     return m_components;
 }
 
