@@ -25,14 +25,17 @@ bool Wire::canConnectTo(const Wire &wire)  const{
 }
 
 bool Wire::canOutputTo(const component_ptr &component) const {
-    return ! intersection(component->m_in, m_points).empty();
+    return ! intersection(component->getInputPorts(), m_points).empty();
 }
 
 int Wire::connectedPort(const component_ptr &component) const {
-    if (contains(component->m_in, m_points[0]))  // TODO: this if statement is not very correct, because m_in is private
-        return component->indexOfInPort(m_points[0]);
-    else
-        return component->indexOfInPort(m_points[1]);
+    auto index = component->indexOfInPort(m_points[0]);
+    if (index != -1) return index;
+    return component->indexOfInPort(m_points[1]);
+}
+
+const std::vector<Coordinate> &Wire::points() const {
+    return m_points;
 }
 
 Component::Component(int lib, std::string name, const std::string &loc) : m_lib(lib), m_name(std::move(name)){
@@ -51,7 +54,7 @@ void Component::addAttribute(const std::string &name, const std::string &val) {
 }
 
 bool Component::canOutputTo(const Wire &wire, unsigned long outport) const {
-    return contains(wire.m_points, m_out[outport]);
+    return contains(wire.points(), m_out[outport]);
 }
 
 bool Component::canOutputTo(const component_ptr &component, unsigned outport) const{
@@ -291,6 +294,18 @@ const std::string &Component::uniqueName() const {
 
 const Coordinate &Component::loc() const {
     return m_loc;
+}
+
+const std::vector<Coordinate> &Component::getOutPorts() const {
+    return m_out;
+}
+
+int Component::lib() const {
+    return m_lib;
+}
+
+const std::map<std::string, std::string> &Component::getAttributes() const {
+    return m_attributes;
 }
 
 PinComponent::PinComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name, loc) {}

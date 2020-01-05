@@ -5,7 +5,6 @@
 int main() {
 
     //TODO: - testing!!!
-    //TODO: - comments in Node.h
 
     XMLParser parser("./test/test.circ");
     parser.parse();

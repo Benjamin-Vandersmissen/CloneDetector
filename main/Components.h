@@ -23,8 +23,6 @@ private:
     std::vector<Coordinate > m_points;
 
 public:
-    friend class Component;
-
     /**
      * \brief create a wire, inputs are the string representation of coordinates
      * */
@@ -50,6 +48,8 @@ public:
      * Returns the index instead of the position
      * */
     int connectedPort(const component_ptr &component) const;
+
+    const std::vector<Coordinate> &points() const;
 };
 
 class Component{
@@ -82,12 +82,6 @@ protected:
 public:
     // counts the occurences for each type of Component
     static std::map<std::string, unsigned int> counter;
-
-    friend class Wire;
-
-    friend class Node;
-
-    friend class Circuit;
 
     /**
      * \brief Create a component
@@ -137,6 +131,15 @@ public:
      * \brief Simple getter for m_in
      * */
     const std::vector<Coordinate> &getInputPorts() const;
+
+    /**
+     * \brief Simple getter for m_out
+     * */
+    const std::vector<Coordinate> &getOutPorts() const;
+
+    int lib() const;
+
+    const std::map<std::string, std::string> &getAttributes() const;
 
     friend bool sortPorts(const component_ptr &comp1, const component_ptr &comp2);
 

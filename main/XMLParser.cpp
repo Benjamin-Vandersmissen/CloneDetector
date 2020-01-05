@@ -149,7 +149,7 @@ void Circuit::generateGraph() {
     for (auto & component : m_components){
         // for each component
 
-        for(auto outport = 0; outport < component->m_out.size(); ++outport) {
+        for(auto outport = 0; outport < component->getOutPorts().size(); ++outport) {
             // for each output port of the component
 
             std::vector<Wire *> wires;
@@ -204,8 +204,8 @@ const std::vector<component_ptr> &Circuit::getComponents() const {
 
 void Circuit::calculatePorts() {
     for(const auto& component : m_components){
-        if (component->name() == "Pin"  and component->m_lib == 0){
-            if(component->m_attributes.find("output") != component->m_attributes.end())
+        if (component->name() == "Pin"  and component->lib() == 0){
+            if(component->getAttributes().find("output") != component->getAttributes().end())
                 m_outputs.push_back(component);
             else
                 m_inputs.push_back(component);
