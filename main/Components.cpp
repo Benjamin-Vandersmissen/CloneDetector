@@ -4,6 +4,9 @@
 
 #include "Components.h"
 #include <iostream>
+#include <utility>
+
+std::map<std::string, unsigned int> Component::counter = {};
 
 std::map<std::string, std::pair<int, int> > circuit_port_map = {};
 
@@ -21,21 +24,24 @@ bool Wire::canConnectTo(const Wire &wire)  const{
     return ! intersection(wire.m_points, m_points).empty();
 }
 
-bool Wire::canOutputTo(const component_ptr component) const {
+bool Wire::canOutputTo(const component_ptr &component) const {
     return ! intersection(component->m_in, m_points).empty();
 }
 
-int Wire::connectedPort(const component_ptr component) const {
+int Wire::connectedPort(const component_ptr &component) const {
     if (contains(component->m_in, m_points[0]))  // TODO: this if statement is not very correct, because m_in is private
         return component->indexOfInPort(m_points[0]);
     else
         return component->indexOfInPort(m_points[1]);
 }
 
-Component::Component(int lib, const std::string &name, const std::string &loc) : m_lib(lib), m_name(name){
+Component::Component(int lib, std::string name, const std::string &loc) : m_lib(lib), m_name(std::move(name)){
     // extract the coordinates from the string
     unsigned loc_x = std::stoi(loc.substr(1, loc.find(',') - 1));
     unsigned loc_y = std::stoi(loc.substr(loc.find(',') + 1, loc.size() - loc.find(',')));
+
+    m_unique_id = m_name + "_" + std::to_string(counter[m_name]);
+    counter[m_name]++;
 
     m_loc = makeCoordinate(loc_x, loc_y);
 }
@@ -48,7 +54,7 @@ bool Component::canOutputTo(const Wire &wire, unsigned long outport) const {
     return contains(wire.m_points, m_out[outport]);
 }
 
-bool Component::canOutputTo(const component_ptr component, unsigned outport) const{
+bool Component::canOutputTo(const component_ptr &component, unsigned outport) const{
     return contains(component->m_in, m_out[outport]);
 }
 
@@ -56,7 +62,7 @@ const std::string &Component::name() const {
     return m_name;
 }
 
-int Component::connectedInPort(const component_ptr component, int outport) const {
+int Component::connectedInPort(const component_ptr &component, int outport) const {
     auto val = component->indexOfInPort(m_out[outport]);
     if (val != -1) return val;
     return -1;
@@ -273,12 +279,14 @@ void NotComponent::calculatePorts() {
     m_in.push_back(relative_center);
 }
 
-bool sortPorts(const component_ptr comp1, const component_ptr comp2){
+bool sortPorts(const component_ptr &comp1, const component_ptr &comp2){
     if(comp1->m_loc.second < comp2->m_loc.second)
         return true;
-    else if (comp1->m_loc.first < comp2->m_loc.first and comp1->m_loc.second == comp2->m_loc.second)
-        return true;
-    return false;
+    return comp1->m_loc.first < comp2->m_loc.first and comp1->m_loc.second == comp2->m_loc.second;
+}
+
+const std::string &Component::uniqueName() const {
+    return m_unique_id;
 }
 
 PinComponent::PinComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name, loc) {}
@@ -307,7 +315,6 @@ CircuitComponent::CircuitComponent(int lib, const std::string &name, const std::
  * */
 void CircuitComponent::calculatePorts() {
     auto ports = circuit_port_map[m_name];
-    auto width = std::max(20, (std::max(ports.first, ports.second)-1)*10);
     auto length = 30;
 
     auto first_in = m_loc;

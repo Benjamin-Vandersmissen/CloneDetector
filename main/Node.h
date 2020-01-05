@@ -12,15 +12,6 @@
 #include <tuple>
 #include "Components.h"
 
-class ConstructionException: public std::exception{
-private:
-    std::string m_errmsg;
-public:
-    explicit ConstructionException(std::string  msg);
-
-    [[nodiscard]] const char* what() const noexcept override ;
-};
-
 
 class Node {
 private:
@@ -29,12 +20,7 @@ private:
     component_ptr m_component;
 
 public:
-    // name : occurences
-    static std::map<std::string, unsigned int> counter;
-
-    Node(std::string name);
-
-    Node(component_ptr component);
+    explicit Node(const component_ptr &component);
 
     /**
      * \brief Simple getter for the name
@@ -53,7 +39,7 @@ private:
     std::pair<node_ptr , unsigned> m_to;
 
 public:
-    Edge(node_ptr from, unsigned outport, node_ptr to, unsigned inport);
+    Edge(const node_ptr& from, unsigned outport, const node_ptr &to, unsigned inport);
 
     const std::pair<node_ptr, unsigned int> & from() const;
 
@@ -73,11 +59,11 @@ protected:
     // # edges : {representation : clones, ... }
     std::map<unsigned, std::vector< std::pair<std::string, std::vector<SubGraph> > > > m_cloneGroups;
 public:
-    Graph();
+    Graph()=default;
 
-    void addNode(node_ptr node);
+    void addNode(const node_ptr& node);
 
-    virtual void addEdge(edge_ptr edge);
+    virtual void addEdge(const edge_ptr &edge);
 
     const std::vector<node_ptr> & nodes() const;
 
@@ -87,11 +73,9 @@ public:
 
     std::vector<SubGraph> prune(const std::vector<SubGraph> &subs, unsigned iteration);
 
-    std::vector<SubGraph> extend(const std::vector<SubGraph> &subs, unsigned iteration);
+    std::vector<SubGraph> extend(const std::vector<SubGraph> &subs);
 
     void removeCoveredGroups(unsigned iteration);
-
-    const std::map<unsigned int, std::vector<std::pair<std::string, std::vector<SubGraph>>>> &getCloneGroups() const;
 
     std::vector<std::vector<SubGraph>> getAllCloneGroups() const;
 
@@ -106,11 +90,11 @@ private:
 
     std::map<std::string, unsigned> m_counter;
 public:
-    SubGraph(edge_ptr edge);
+    explicit SubGraph(const edge_ptr &edge);
 
     bool canConnect(const edge_ptr &edge);
 
-    void addEdge(edge_ptr edge) override;
+    void addEdge(const edge_ptr &edge) override;
 
     std::string representation() const;
 

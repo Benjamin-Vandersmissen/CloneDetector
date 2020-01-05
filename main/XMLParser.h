@@ -123,7 +123,7 @@ private:
 
     bool print_while_parsing = false;
 public:
-    XMLParser(const std::string& filename);
+    explicit XMLParser(const std::string& filename);
 
     /**
      * \brief parse the whole file, when finished, m_circuits should correspond with the circuits from the XML minus some additional (useless) data
@@ -138,6 +138,8 @@ public:
      * Should only be called after parse is called (TODO? enforce this via a state?)
      * */
     void generateGraphs();
+
+    void getAnnotatedClones(const std::string& out_circ, const std::string& out_clones);
 
     /**
      * \brief Get the graphs for all circuits

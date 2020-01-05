@@ -5,11 +5,12 @@
 #include "XMLParser.h"
 
 #include <utility>
+#include <fstream>
 
 XMLParser::XMLParser(const std::string &filename) {
     m_document.LoadFile(filename.c_str());
     m_root_elem = m_document.FirstChildElement("project");
-    Node::counter = {};
+    Component::counter = {};
 }
 
 void XMLParser::parse() {
@@ -19,7 +20,7 @@ void XMLParser::parse() {
 
 void XMLParser::parseLibraries() {
     auto lib_elem = m_root_elem->FirstChildElement("lib");
-    while(lib_elem != NULL){
+    while(lib_elem != nullptr){
         auto library_name = lib_elem->Attribute("desc");
         auto library_id = lib_elem->IntAttribute("name");
         if (print_while_parsing) std::cout << library_name << "  " << library_id << std::endl;
@@ -58,6 +59,17 @@ void XMLParser::parseComponents(tinyxml2::XMLElement *circuit_root_elem) {
         int lib = comp_elem->IntAttribute("lib", -1);
         auto name = comp_elem->Attribute("name");
         m_circuits.back().addComponent(lib, name, loc);
+
+
+        {  // Add the unique label to the XML, used for getAnnotatedClones
+            auto unique_name = m_circuits.back().lastComponent().uniqueName();
+            auto new_element = m_document.NewElement("a");
+            new_element->SetAttribute("name", "label");
+            new_element->SetAttribute("val", unique_name.c_str());
+            comp_elem->InsertEndChild(new_element);
+        }
+
+
         if (print_while_parsing) std::cout << "\t component of library " << lib << " named " << name << " at " << loc << std::endl;
         parseAttributes(comp_elem);
         comp_elem = comp_elem->NextSiblingElement("comp");
@@ -83,13 +95,32 @@ void XMLParser::generateGraphs() {
 
 std::vector<Graph*> XMLParser::getGraphs() const {
     std::vector<Graph*> graphs;
-    for(auto circuit: m_circuits)
+    for(const auto& circuit: m_circuits)
         graphs.push_back(circuit.getGraphRepresentation());
     return graphs;
 }
 
 const std::vector<Circuit> &XMLParser::getCircuits() const {
     return m_circuits;
+}
+
+void XMLParser::getAnnotatedClones(const std::string &out_circ, const std::string &out_clones) {
+    m_document.SaveFile(out_circ.c_str());
+    auto clone_groups = getCloneGroups(this->getGraphs());
+
+    std::ofstream ofile(out_clones);
+    auto group_counter = 0;
+    for (const auto & group : clone_groups){
+        ofile << "Clone Group " << group_counter << "\n----------------------------------\n\n";
+        for(const auto& subGraph : group){
+            ofile << "{\n";
+            for (const auto& edge : subGraph.edges())
+                ofile << "  " << edge->from().first->getName() << " -> " << edge->to().first->getName() << " ( " << edge->from().second << " / " << edge->to().second << " )\n";
+            ofile << "}\n\n";
+        }
+        group_counter++;
+    }
+    ofile.close();
 }
 
 Circuit::Circuit(std::string name) : m_name(std::move(name)){
@@ -172,7 +203,7 @@ const std::vector<component_ptr> &Circuit::getComponents() const {
 }
 
 void Circuit::calculatePorts() {
-    for(auto component : m_components){
+    for(const auto& component : m_components){
         if (component->name() == "Pin"  and component->m_lib == 0){
             if(component->m_attributes.find("output") != component->m_attributes.end())
                 m_outputs.push_back(component);

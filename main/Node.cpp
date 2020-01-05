@@ -7,17 +7,8 @@
 
 #include <utility>
 
-std::map<std::string, unsigned int> Node::counter = {};
-
-
-Node::Node(std::string name) {
-    if (counter.find(name) == counter.end()){
-        counter[name] = 0;
-    }
-    m_name = name + "_" + std::to_string(counter[name]++); // Append index to name and increment index
-}
-
-Node::Node(component_ptr component) : Node(component->m_name){
+Node::Node(const component_ptr &component) {
+    m_name = component->uniqueName();
     m_component = component;
 }
 
@@ -28,12 +19,6 @@ const std::string &Node::getName() const {
 component_ptr Node::component() const {
     return m_component;
 }
-
-const char *ConstructionException::what() const noexcept {
-    return m_errmsg.c_str();
-}
-
-ConstructionException::ConstructionException(std::string msg) : m_errmsg(std::move(msg)){}
 
 
 void plot(std::ostream &stream, const std::vector<Graph*> &graphs, std::vector<std::string> names) {
@@ -113,7 +98,7 @@ plot_clones(std::ostream &stream, const std::vector<Graph *> &graphs, std::vecto
     stream << "}";
 }
 
-Edge::Edge(node_ptr from, unsigned outport, node_ptr to, unsigned inport): m_from{from, outport}, m_to{to, inport} {}
+Edge::Edge(const node_ptr& from, unsigned outport, const node_ptr &to, unsigned inport): m_from{from, outport}, m_to{to, inport} {}
 
 const std::pair<node_ptr, unsigned int> & Edge::from() const {
     return m_from;
@@ -123,14 +108,12 @@ const std::pair<node_ptr, unsigned int> & Edge::to() const {
     return m_to;
 }
 
-Graph::Graph() {}
-
-void Graph::addNode(node_ptr node) {
+void Graph::addNode(const node_ptr& node) {
     if (! contains(m_nodes, node))
         m_nodes.push_back(node);
 }
 
-void Graph::addEdge(edge_ptr edge) {
+void Graph::addEdge(const edge_ptr &edge) {
     if (contains(m_nodes, edge->from().first) and contains(m_nodes, edge->to().first))
         m_edges.push_back(edge);
 }
@@ -154,7 +137,7 @@ void Graph::findClones() {
     while(m_cloneGroups.size() == iteration) {
         subgraphs = prune(subgraphs, iteration);
         if(subgraphs.empty()) return;   // No potential clone pairs anymore
-        subgraphs = extend(subgraphs, iteration);
+        subgraphs = extend(subgraphs);
         if (iteration > 0) removeCoveredGroups(iteration);
         iteration ++;
     }
@@ -182,7 +165,7 @@ std::vector<SubGraph> Graph::prune(const std::vector<SubGraph> &subs, unsigned i
     return retValue;
 }
 
-std::vector<SubGraph> Graph::extend(const std::vector<SubGraph> &subs, unsigned iteration) {
+std::vector<SubGraph> Graph::extend(const std::vector<SubGraph> &subs) {
     std::vector<SubGraph> retValue;
     for (auto sub : subs){
         for(const auto& edge : m_edges){
@@ -233,11 +216,6 @@ void Graph::removeCoveredGroups(unsigned iteration) {
     if(previousGroups.empty())  this->m_cloneGroups.erase(iteration-1);
 }
 
-const std::map<unsigned int, std::vector<std::pair<std::string, std::vector<SubGraph>>>> &
-Graph::getCloneGroups() const {
-    return m_cloneGroups;
-}
-
 std::vector<std::vector<SubGraph>> Graph::getAllCloneGroups() const {
     std::vector<std::vector<SubGraph>> clones;
     for(const auto& pair : m_cloneGroups){ // all clone groups with same iteration
@@ -248,7 +226,7 @@ std::vector<std::vector<SubGraph>> Graph::getAllCloneGroups() const {
     return clones;
 }
 
-SubGraph::SubGraph(edge_ptr edge) {
+SubGraph::SubGraph(const edge_ptr &edge) {
     m_edges = {edge};
     m_nodes = {edge->from().first, edge->to().first};
 
@@ -259,7 +237,7 @@ bool SubGraph::canConnect(const edge_ptr &edge) {
     return (contains(m_nodes, edge->from().first) || contains(m_nodes, edge->to().first)) and not(contains(m_edges, edge));
 }
 
-void SubGraph::addEdge(edge_ptr edge) {
+void SubGraph::addEdge(const edge_ptr &edge) {
     m_edges.push_back(edge);
     if (!contains(m_nodes, edge->from().first)) {
         m_nodes.push_back(edge->from().first);

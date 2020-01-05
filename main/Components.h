@@ -42,14 +42,14 @@ public:
      *
      * Do this by intersecting the point vector of the wire with the inports vector of the Component
      * */
-    bool canOutputTo(const component_ptr component) const;
+    bool canOutputTo(const component_ptr &component) const;
 
     /**
      * \brief Find the input port this wire is connected to.
      *
      * Returns the index instead of the position
      * */
-    int connectedPort(const component_ptr component) const;
+    int connectedPort(const component_ptr &component) const;
 };
 
 class Component{
@@ -77,7 +77,12 @@ protected:
         NORTH
     };
 
+    std::string m_unique_id;
+
 public:
+    // counts the occurences for each type of Component
+    static std::map<std::string, unsigned int> counter;
+
     friend class Wire;
 
     friend class Node;
@@ -87,7 +92,7 @@ public:
     /**
      * \brief Create a component
      * */
-    Component(int lib, const std::string &name, const std::string &loc);
+    Component(int lib, std::string name, const std::string &loc);
 
     /**
      * \brief add an attribute and a value, overwrites the attribute if already defined
@@ -111,7 +116,7 @@ public:
     /**
      * \brief Test if a connection can be made with a component on the given outport
      * */
-    bool canOutputTo(const component_ptr component, unsigned outport= 0) const;
+    bool canOutputTo(const component_ptr &component, unsigned outport= 0) const;
 
     /**
      * \brief Simple getter for m_name
@@ -121,7 +126,7 @@ public:
     /**
      * \brief Find the index of the inport the given outport of the component is connected to
      * */
-    int connectedInPort(const component_ptr component, int outport) const;
+    int connectedInPort(const component_ptr &component, int outport) const;
 
     /**
      * \brief converts a coordinate of an inport to its index
@@ -133,13 +138,15 @@ public:
      * */
     const std::vector<Coordinate> &getInputPorts() const;
 
-    friend bool sortPorts(const component_ptr comp1, const component_ptr comp2);
+    friend bool sortPorts(const component_ptr &comp1, const component_ptr &comp2);
+
+    const std::string &uniqueName() const;
 };
 
 /**
  * \brief Sorts 2 coordinates, first descending on y-value, then in case of same y-value, on x-value
  * */
-bool sortPorts(const component_ptr comp1, const component_ptr comp2);
+bool sortPorts(const component_ptr &comp1, const component_ptr &comp2);
 
 // AND, OR, NAND, NOR, XOR, XNOR
 class GateComponent : public Component{
