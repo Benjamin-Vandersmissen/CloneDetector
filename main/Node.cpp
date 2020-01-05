@@ -183,16 +183,10 @@ void Graph::removeCoveredGroups(unsigned iteration) {
     auto& previousGroups = m_cloneGroups[iteration-1];
     auto& currentGroups = m_cloneGroups[iteration];
 
-    // size(previousGroups) >= size(currentGroups) => if currentGroups[j] doesn't cover previousGroups[i] ( j <= i), no currentGroup covers it
-    /*
-     * Why? -> ideal case: previousGroups[i] is extended in currentGroups[i] (Every preceding i is extended as well)
-     *      -> previousGroups[i] is extended in currentGroups[j], j < i (Some preceding i aren't extended / this group has merged with another group that is already extended in a currentGroup)
-     * */
-
     std::vector<std::size_t > to_delete;
 
     for(auto i = 0; i  < previousGroups.size(); ++i){
-        for(auto j = std::min(i, int(currentGroups.size()-1)); j >= 0; --j){
+        for(int j = currentGroups.size()-1; j >= 0; --j){
             auto group1 = previousGroups[i];
             auto group2 = currentGroups[j];
             if(group1.second.size() > group2.second.size()) // All clones from the previous iteration need to be in the current iteration for a full cover

@@ -623,7 +623,7 @@ TEST(subCircuitPorts, subCircuitPorts){
     ASSERT_EQ(circuit_port_map[circuit.getName()].first, 4);
     ASSERT_EQ(circuit_port_map[circuit.getName()].second, 4);
 
-    {
+    {   // test inputs
         auto inputs = circuit.inputs();
 
         ASSERT_EQ(inputs[0]->loc(), Coordinate(130, 90));
@@ -632,7 +632,7 @@ TEST(subCircuitPorts, subCircuitPorts){
         ASSERT_EQ(inputs[3]->loc(), Coordinate(240, 140));
     }
 
-    {
+    {   // test outputs
         auto outputs = circuit.outputs();
 
         ASSERT_EQ(outputs[0]->loc(), Coordinate(420, 90));
@@ -653,12 +653,12 @@ TEST(CloneDetection, easyClones){
     auto clones = cloneGroups[0];
     ASSERT_EQ(clones.size(), 2); // 2 clones
 
-    {
+    {   // clone 0
         auto subgraph = clones[0];
 
         auto edges = subgraph.edges();
 
-        {
+        {   // edge 0
             auto edge = edges[0];
             ASSERT_EQ(edge->from().first->getName(), "AND Gate_0");
             ASSERT_EQ(edge->from().second, 0);
@@ -667,7 +667,7 @@ TEST(CloneDetection, easyClones){
             ASSERT_EQ(edge->to().second, 0);
         }
 
-        {
+        {   // edge 1
             auto edge = edges[1];
             ASSERT_EQ(edge->from().first->getName(), "Pin_1");
             ASSERT_EQ(edge->from().second, 0);
@@ -676,7 +676,7 @@ TEST(CloneDetection, easyClones){
             ASSERT_EQ(edge->to().second, 0);
         }
 
-        {
+        {   // edge 2
             auto edge = edges[2];
             ASSERT_EQ(edge->from().first->getName(), "Pin_4");
             ASSERT_EQ(edge->from().second, 0);
@@ -686,12 +686,12 @@ TEST(CloneDetection, easyClones){
         }
     }
 
-    {
+    {   // clone 1
         auto subgraph = clones[1];
 
         auto edges = subgraph.edges();
 
-        {
+        {   // edge 0
             auto edge = edges[0];
             ASSERT_EQ(edge->from().first->getName(), "AND Gate_1");
             ASSERT_EQ(edge->from().second, 0);
@@ -700,7 +700,7 @@ TEST(CloneDetection, easyClones){
             ASSERT_EQ(edge->to().second, 0);
         }
 
-        {
+        {   // edge 1
             auto edge = edges[1];
             ASSERT_EQ(edge->from().first->getName(), "Pin_3");
             ASSERT_EQ(edge->from().second, 0);
@@ -709,7 +709,7 @@ TEST(CloneDetection, easyClones){
             ASSERT_EQ(edge->to().second, 0);
         }
 
-        {
+        {   // edge 2
             auto edge = edges[2];
             ASSERT_EQ(edge->from().first->getName(), "Pin_0");
             ASSERT_EQ(edge->from().second, 0);
@@ -717,6 +717,63 @@ TEST(CloneDetection, easyClones){
             ASSERT_EQ(edge->to().first->getName(), "AND Gate_1");
             ASSERT_EQ(edge->to().second, 1);
         }
+    }
+}
+
+TEST(CloneDetection, overlappingClones){
+    XMLParser parser("./circuits/overlappingClones.circ");
+    parser.parse();
+    parser.generateGraphs();
+
+    auto cloneGroups = getCloneGroups(parser.getGraphs());
+    ASSERT_EQ(cloneGroups.size(), 2); // 2 clone group
+
+    {   // cloneGroup 0
+        // clones : pin_0 -> And_0 (0/0), pin1 -> And_0 (0/1)
+        auto clones = cloneGroups[0];
+        ASSERT_EQ(clones.size(), 3); // 3 clones
+
+        auto clone = clones[0];
+        auto edges = clone.edges();
+
+        ASSERT_EQ(edges[0]->from().first->component()->name(), "Pin");
+        ASSERT_EQ(edges[0]->from().second, 0);
+
+        ASSERT_EQ(edges[0]->to().first->component()->name(), "AND Gate");
+        ASSERT_EQ(edges[0]->to().second, 0);
+
+        ASSERT_EQ(edges[1]->from().first->component()->name(), "Pin");
+        ASSERT_EQ(edges[1]->from().second, 0);
+
+        ASSERT_EQ(edges[1]->to().first->component()->name(), "AND Gate");
+        ASSERT_EQ(edges[1]->to().second, 1);
+    }
+
+    {   // cloneGroup 1
+        // clones : And_0 -> pin_0 (0/0), pin_1 - > And_0 (0/0), pin_2 -> And_0 (0/1)
+        auto clones = cloneGroups[1];
+        ASSERT_EQ(clones.size(), 2); // 2 clones
+
+        auto clone = clones[0];
+        auto edges = clone.edges();
+
+        ASSERT_EQ(edges[0]->from().first->component()->name(), "AND Gate");
+        ASSERT_EQ(edges[0]->from().second, 0);
+
+        ASSERT_EQ(edges[0]->to().first->component()->name(), "Pin");
+        ASSERT_EQ(edges[0]->to().second, 0);
+
+        ASSERT_EQ(edges[1]->from().first->component()->name(), "Pin");
+        ASSERT_EQ(edges[1]->from().second, 0);
+
+        ASSERT_EQ(edges[1]->to().first->component()->name(), "AND Gate");
+        ASSERT_EQ(edges[1]->to().second, 0);
+
+        ASSERT_EQ(edges[2]->from().first->component()->name(), "Pin");
+        ASSERT_EQ(edges[2]->from().second, 0);
+
+        ASSERT_EQ(edges[2]->to().first->component()->name(), "AND Gate");
+        ASSERT_EQ(edges[2]->to().second, 1);
     }
 }
 
