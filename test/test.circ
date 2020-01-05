@@ -73,7 +73,6 @@
     <wire from="(130,30)" to="(160,30)"/>
     <wire from="(420,210)" to="(450,210)"/>
     <wire from="(330,30)" to="(360,30)"/>
-    <wire from="(40,310)" to="(60,310)"/>
     <wire from="(170,270)" to="(190,270)"/>
     <wire from="(170,230)" to="(190,230)"/>
     <wire from="(430,110)" to="(430,150)"/>
@@ -134,11 +133,10 @@
     <comp lib="0" loc="(440,230)" name="Pin">
       <a name="tristate" val="false"/>
     </comp>
-    <comp lib="0" loc="(40,310)" name="Pin">
-      <a name="tristate" val="false"/>
-      <a name="label" val="pin_0"/>
-    </comp>
     <comp lib="0" loc="(170,230)" name="Pin">
+      <a name="tristate" val="false"/>
+    </comp>
+    <comp lib="0" loc="(60,310)" name="Pin">
       <a name="tristate" val="false"/>
     </comp>
     <comp lib="0" loc="(390,30)" name="Pin">

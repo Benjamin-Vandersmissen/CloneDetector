@@ -86,6 +86,10 @@ public:
      * \brief Simple getter for m_name
      * */
     const std::string &getName() const;
+
+    const std::vector<component_ptr> &inputs() const;
+
+    const std::vector<component_ptr> &outputs() const;
 };
 
 class XMLParser {
@@ -139,6 +143,11 @@ public:
      * */
     void generateGraphs();
 
+    /**
+     * \brief Output the annotated logisim file and output the clones to another file
+     *
+     * Should only be called after parse and generateGraphs is called (TODO? enforce this via a state?)
+     * */
     void getAnnotatedClones(const std::string& out_circ, const std::string& out_clones);
 
     /**

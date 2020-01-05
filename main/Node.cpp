@@ -157,7 +157,7 @@ std::vector<SubGraph> Graph::prune(const std::vector<SubGraph> &subs, unsigned i
     std::vector<SubGraph > retValue;
 
     for(auto pair : mapping){
-        if(pair.second.size() > 1){
+        if(pair.second.size() > 1){ // a canonical label has more than 1 subGraph -> clones
             m_cloneGroups[iteration].push_back(pair);
             retValue.insert(retValue.end(), pair.second.begin(), pair.second.end());
         }

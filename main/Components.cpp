@@ -289,6 +289,10 @@ const std::string &Component::uniqueName() const {
     return m_unique_id;
 }
 
+const Coordinate &Component::loc() const {
+    return m_loc;
+}
+
 PinComponent::PinComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name, loc) {}
 
 void PinComponent::calculatePorts() {

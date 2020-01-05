@@ -221,3 +221,11 @@ void Circuit::calculatePorts() {
 const std::string &Circuit::getName() const {
     return m_name;
 }
+
+const std::vector<component_ptr> &Circuit::inputs() const {
+    return m_inputs;
+}
+
+const std::vector<component_ptr> &Circuit::outputs() const {
+    return m_outputs;
+}

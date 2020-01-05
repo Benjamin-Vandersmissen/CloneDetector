@@ -613,6 +613,35 @@ TEST(CorrectConnections, directConnection) {
     }
 }
 
+TEST(subCircuitPorts, subCircuitPorts){
+    XMLParser parser("./circuits/subCircuitPorts.circ");
+    parser.parse();
+    parser.generateGraphs();
+    auto circuit = parser.getCircuits()[1];
+
+    ASSERT_EQ(circuit.getName(), "SubCircuit");
+    ASSERT_EQ(circuit_port_map[circuit.getName()].first, 4);
+    ASSERT_EQ(circuit_port_map[circuit.getName()].second, 4);
+
+    {
+        auto inputs = circuit.inputs();
+
+        ASSERT_EQ(inputs[0]->loc(), Coordinate(130, 90));
+        ASSERT_EQ(inputs[1]->loc(), Coordinate(240, 90));
+        ASSERT_EQ(inputs[2]->loc(), Coordinate(130, 140));
+        ASSERT_EQ(inputs[3]->loc(), Coordinate(240, 140));
+    }
+
+    {
+        auto outputs = circuit.outputs();
+
+        ASSERT_EQ(outputs[0]->loc(), Coordinate(420, 90));
+        ASSERT_EQ(outputs[1]->loc(), Coordinate(540, 90));
+        ASSERT_EQ(outputs[2]->loc(), Coordinate(420, 140));
+        ASSERT_EQ(outputs[3]->loc(), Coordinate(540, 140));
+    }
+}
+
 int main(){
     ::testing::InitGoogleTest();
     return RUN_ALL_TESTS();

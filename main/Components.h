@@ -140,11 +140,18 @@ public:
 
     friend bool sortPorts(const component_ptr &comp1, const component_ptr &comp2);
 
+    /**
+     * \brief simple getter for m_unique_id
+     * */
     const std::string &uniqueName() const;
+
+    const Coordinate &loc() const;
 };
 
 /**
  * \brief Sorts 2 coordinates, first descending on y-value, then in case of same y-value, on x-value
+ *
+ * Used for calculating which port of a subCircuit corresponds to which pin
  * */
 bool sortPorts(const component_ptr &comp1, const component_ptr &comp2);
 
