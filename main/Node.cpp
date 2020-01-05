@@ -134,7 +134,7 @@ void Graph::findClones() {
         subgraphs.emplace_back(edge);
     }
     auto iteration = 0;
-    while(m_cloneGroups.size() == iteration) {
+    while(true) {
         subgraphs = prune(subgraphs, iteration);
         if(subgraphs.empty()) return;   // No potential clone pairs anymore
         subgraphs = extend(subgraphs);

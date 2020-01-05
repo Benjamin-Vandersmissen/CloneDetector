@@ -642,6 +642,84 @@ TEST(subCircuitPorts, subCircuitPorts){
     }
 }
 
+TEST(CloneDetection, easyClones){
+    XMLParser parser("./circuits/easyClones.circ");
+    parser.parse();
+    parser.generateGraphs();
+
+    auto cloneGroups = getCloneGroups(parser.getGraphs());
+    ASSERT_EQ(cloneGroups.size(), 1); // 1 clone group
+
+    auto clones = cloneGroups[0];
+    ASSERT_EQ(clones.size(), 2); // 2 clones
+
+    {
+        auto subgraph = clones[0];
+
+        auto edges = subgraph.edges();
+
+        {
+            auto edge = edges[0];
+            ASSERT_EQ(edge->from().first->getName(), "AND Gate_0");
+            ASSERT_EQ(edge->from().second, 0);
+
+            ASSERT_EQ(edge->to().first->getName(), "Pin_5");
+            ASSERT_EQ(edge->to().second, 0);
+        }
+
+        {
+            auto edge = edges[1];
+            ASSERT_EQ(edge->from().first->getName(), "Pin_1");
+            ASSERT_EQ(edge->from().second, 0);
+
+            ASSERT_EQ(edge->to().first->getName(), "AND Gate_0");
+            ASSERT_EQ(edge->to().second, 0);
+        }
+
+        {
+            auto edge = edges[2];
+            ASSERT_EQ(edge->from().first->getName(), "Pin_4");
+            ASSERT_EQ(edge->from().second, 0);
+
+            ASSERT_EQ(edge->to().first->getName(), "AND Gate_0");
+            ASSERT_EQ(edge->to().second, 1);
+        }
+    }
+
+    {
+        auto subgraph = clones[1];
+
+        auto edges = subgraph.edges();
+
+        {
+            auto edge = edges[0];
+            ASSERT_EQ(edge->from().first->getName(), "AND Gate_1");
+            ASSERT_EQ(edge->from().second, 0);
+
+            ASSERT_EQ(edge->to().first->getName(), "Pin_2");
+            ASSERT_EQ(edge->to().second, 0);
+        }
+
+        {
+            auto edge = edges[1];
+            ASSERT_EQ(edge->from().first->getName(), "Pin_3");
+            ASSERT_EQ(edge->from().second, 0);
+
+            ASSERT_EQ(edge->to().first->getName(), "AND Gate_1");
+            ASSERT_EQ(edge->to().second, 0);
+        }
+
+        {
+            auto edge = edges[2];
+            ASSERT_EQ(edge->from().first->getName(), "Pin_0");
+            ASSERT_EQ(edge->from().second, 0);
+
+            ASSERT_EQ(edge->to().first->getName(), "AND Gate_1");
+            ASSERT_EQ(edge->to().second, 1);
+        }
+    }
+}
+
 int main(){
     ::testing::InitGoogleTest();
     return RUN_ALL_TESTS();
