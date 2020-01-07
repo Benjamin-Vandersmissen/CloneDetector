@@ -244,10 +244,12 @@ void SubGraph::addEdge(const edge_ptr &edge) {
 std::string SubGraph::representation() const {
     std::string representation;
     for (const auto& edge : m_edges){
-        representation+= m_mapping.at(edge->from().first) + " -> " + m_mapping.at(edge->to().first) + " ("
-                        + std::to_string(edge->from().second) + "/" + std::to_string(edge->to().second) + ")\n";
+        representation += m_mapping.at(edge->from().first) + " -> " + m_mapping.at(edge->to().first) + " ("+ std::to_string(edge->from().second) + "/" ;
+        if (! edge->to().first->component()->interchangeable_inputs())
+            representation += std::to_string(edge->to().second);
+        representation += + ")\n";
     }
-    return representation;
+    return representation ;
 }
 
 void SubGraph::remap() {
@@ -270,6 +272,7 @@ void SubGraph::remap() {
 }
 
 bool SubGraph::compareEdges(const edge_ptr &e1, const edge_ptr &e2) {
+    //TODO: differentiate names of internal components and circuits, add a prefix in overloaded name() function?
     if (e1->from().first->component()->name() < e2->from().first->component()->name())
         return true;
     else if(e1->from().first->component()->name() == e2->from().first->component()->name()){
@@ -278,6 +281,8 @@ bool SubGraph::compareEdges(const edge_ptr &e1, const edge_ptr &e2) {
         else if (e1->from().second == e2->from().second){
             if (e1->to().first->component()->name() < e2->to().first->component()->name())
                 return true;
+            else if(e1->from().first->component()->interchangeable_inputs()) // don't differentiate between inputs, if they are interchangeable
+                return false;
             else if (e1->to().first->component()->name() == e1->to().first->component()->name()){
                 return e1->to().second < e2->to().second;
             }

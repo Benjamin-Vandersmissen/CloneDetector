@@ -149,6 +149,8 @@ public:
     const std::string &uniqueName() const;
 
     const Coordinate &loc() const;
+
+    virtual bool interchangeable_inputs() const = 0;
 };
 
 /**
@@ -170,6 +172,8 @@ public:
      * */
 
     void calculatePorts() override ;
+
+    bool interchangeable_inputs() const override {return true;}
 };
 
 // NOT
@@ -183,6 +187,8 @@ public:
      * NotComponents always have one input, one output and 2 different possible sizes
      * */
     void calculatePorts() override ;
+
+    bool interchangeable_inputs() const override {return false;}
 };
 
 // Pin
@@ -196,6 +202,8 @@ public:
      * PinComponents have one input OR one output and a fixed size
      * */
     void calculatePorts() override ;
+
+    bool interchangeable_inputs() const override {return false;}
 };
 
 // Circuit
@@ -210,6 +218,8 @@ public:
      * This implementation is based on the default appearance of SubCircuits, it won't work otherwise
      * */
     void calculatePorts() override ;
+
+    bool interchangeable_inputs() const override {return false;}
 };
 
 /**
