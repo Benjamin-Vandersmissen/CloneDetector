@@ -40,5 +40,15 @@ std::vector<T> intersection(std::vector<T> v1, std::vector<T> v2){
     return v3;
 }
 
+template<typename T>
+std::vector<T> difference(std::vector<T> v1, std::vector<T> v2){
+    std::vector<T> v3;
+
+    std::sort(v1.begin(), v1.end());
+    std::sort(v2.begin(), v2.end());
+
+    std::set_difference(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(v3));
+    return v3;
+}
 using Coordinate = std::pair<unsigned, unsigned>;
 Coordinate makeCoordinate(unsigned int x, unsigned int y);

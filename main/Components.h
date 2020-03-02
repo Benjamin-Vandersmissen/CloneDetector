@@ -141,6 +141,10 @@ public:
 
     const std::map<std::string, std::string> &getAttributes() const;
 
+    /**
+     * \brief sort 2 components, based on their location
+     * This is the same sort used to determine which pin of a circuit corresponds to which in/output
+     * */
     friend bool sortPorts(const component_ptr &comp1, const component_ptr &comp2);
 
     /**

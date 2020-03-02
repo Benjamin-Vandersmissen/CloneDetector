@@ -117,12 +117,24 @@ public:
     std::vector<std::vector<SubGraph>> getAllCloneGroups() const;
 
     friend std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*>& graphs);
+
+    friend std::vector<std::vector<SubGraph>> getSelectCloneGroups(const std::vector<Graph*>& graphs);
 };
 
 /**
  * \brief Calculate the cloneGroups of a vector of Graphs, by merging them in one graph and running Graph::findClones, graph::getAllCloneGroups
  * */
 std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*>& graphs);
+
+/**
+ * \brief Calculate the cloneGroups of a vector of Graphs and filtering them
+ * */
+ std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*>& graphs);
+
+ /**
+  * \brief Calculate the covered nodes of a SubGraph, i.e. the nodes that have all outgoing or all incoming edges in the subgraph
+  * */
+ unsigned coveredNodes(const SubGraph& sg);
 
 class SubGraph : public Graph{
 private:
@@ -137,7 +149,7 @@ public:
     /**
      * \brief return True if edge not in m_edges and edge can connect with another edge from m_edges
      * */
-    bool canConnect(const edge_ptr &edge);
+    bool canConnect(const edge_ptr &edge) const;
 
     /**
      * \brief Add an edge to m_edges, also add the nodes if they aren't in m_nodes
@@ -159,6 +171,10 @@ public:
      * */
     static bool compareEdges(const edge_ptr &e1, const edge_ptr &e2);
 
+    /**
+     * \brief size of intersection of edges = size of edges - 1
+     * */
+    bool canMerge(const SubGraph& sg) const;
 };
 
 /**

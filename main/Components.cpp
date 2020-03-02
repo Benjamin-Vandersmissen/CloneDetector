@@ -317,7 +317,8 @@ void PinComponent::calculatePorts() {
         m_in.push_back(m_loc);
 }
 
-CircuitComponent::CircuitComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name,
+// Give a circuit component a unique prefix, to avoid conflicts with normal components
+CircuitComponent::CircuitComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, "user_" + name,
                                                                                                          loc) {}
 /**
  *  _____________

@@ -106,7 +106,7 @@ const std::vector<Circuit> &XMLParser::getCircuits() const {
 
 void XMLParser::getAnnotatedClones(const std::string &out_circ, const std::string &out_clones) {
     m_document.SaveFile(out_circ.c_str());
-    auto clone_groups = getCloneGroups(this->getGraphs());
+    auto clone_groups = getSelectCloneGroups(this->getGraphs());
 
     std::ofstream ofile(out_clones);
     auto group_counter = 0;
@@ -133,6 +133,7 @@ void Circuit::addWire(const std::string &from, const std::string &to) {
 
 void Circuit::addComponent(int lib, const std::string &name, const std::string &loc) {
     m_components.emplace_back(createComponent(lib, name, loc));
+    if (m_components.back() == nullptr) m_components.pop_back();
 }
 
 Component &Circuit::lastComponent() const{

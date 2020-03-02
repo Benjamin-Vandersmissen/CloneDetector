@@ -25,7 +25,7 @@ void plot(std::ostream &stream, const std::vector<Graph*> &graphs, std::vector<s
     stream << "digraph Circuit{\n";
     auto name_it = names.begin();
     for (const auto& graph : graphs){
-        stream << "subgraph cluster_" << *name_it << " {\n";
+        stream << "subgraph \"cluster_" << *name_it << "\" {\n";
         for(const auto& node: graph->nodes())
             stream << "\"" << node->getName() << "\";\n";
         for(const auto& edge: graph->edges()){
@@ -44,7 +44,7 @@ void
 plot_clones(std::ostream &stream, const std::vector<Graph *> &graphs, std::vector<std::string> names, bool onlyClones) {
     stream << "digraph Circuit{\n";
     auto name_it = names.begin();
-    auto clone_groups = getCloneGroups(graphs);
+    auto clone_groups = getSelectCloneGroups(graphs);
 
     std::map<unsigned, unsigned> clone_to_group;
     std::map<unsigned, std::vector<edge_ptr> > clone_to_edges;
@@ -69,7 +69,7 @@ plot_clones(std::ostream &stream, const std::vector<Graph *> &graphs, std::vecto
         }
     }
     for (const auto& graph : graphs){
-        stream << "subgraph cluster_" << *name_it << " {\n";
+        stream << "subgraph \"cluster_" << *name_it << "\" {\n";
         for(const auto& node: graph->nodes()) {
             if (!onlyClones)
                 stream << "\"" << node->getName() << "\";\n";
@@ -135,9 +135,12 @@ void Graph::findClones() {
     }
     auto iteration = 0;
     while(true) {
+        std::cout << "Before Pruning:" << subgraphs.size() << std::endl;
         subgraphs = prune(subgraphs, iteration);
+        std::cout << "After Pruning:" << subgraphs.size() << std::endl;
         if(subgraphs.empty()) return;   // No potential clone pairs anymore
         subgraphs = extend(subgraphs);
+        std::cout << "After Extending:" << subgraphs.size() << std::endl;
         if (iteration > 0) removeCoveredGroups(iteration);
         iteration ++;
     }
@@ -167,10 +170,12 @@ std::vector<SubGraph> Graph::prune(const std::vector<SubGraph> &subs, unsigned i
 
 std::vector<SubGraph> Graph::extend(const std::vector<SubGraph> &subs) {
     std::vector<SubGraph> retValue;
-    for (auto sub : subs){
-        for(const auto& edge : m_edges){
-            if (sub.canConnect(edge)){
-                auto new_sub = sub;
+    // if and only if subs[i] is a clone of size k, sub[j] is a clone of size k, intersection(sub[i], sub[j]) has a size of k-1, then union(sub[i][, sub[j]) is a candidate clone
+    for (auto i = 0; i < subs.size(); ++i){
+        for(auto j = i+1; j < subs.size(); ++j){
+            if(subs[i].canMerge(subs[j])) {
+                auto edge = difference(subs[j].edges(), subs[i].edges())[0];
+                auto new_sub = subs[i];
                 new_sub.addEdge(edge);
                 retValue.push_back(new_sub);
             }
@@ -189,8 +194,6 @@ void Graph::removeCoveredGroups(unsigned iteration) {
         for(int j = currentGroups.size()-1; j >= 0; --j){
             auto group1 = previousGroups[i];
             auto group2 = currentGroups[j];
-            if(group1.second.size() > group2.second.size()) // All clones from the previous iteration need to be in the current iteration for a full cover
-                continue;
 
             bool covered = true;
             for(const auto& subgraph : group1.second){
@@ -227,7 +230,7 @@ SubGraph::SubGraph(const edge_ptr &edge) {
     remap();
 }
 
-bool SubGraph::canConnect(const edge_ptr &edge) {
+bool SubGraph::canConnect(const edge_ptr &edge) const{
     return (contains(m_nodes, edge->from().first) || contains(m_nodes, edge->to().first)) and not(contains(m_edges, edge));
 }
 
@@ -272,7 +275,6 @@ void SubGraph::remap() {
 }
 
 bool SubGraph::compareEdges(const edge_ptr &e1, const edge_ptr &e2) {
-    //TODO: differentiate names of internal components and circuits, add a prefix in overloaded name() function?
     if (e1->from().first->component()->name() < e2->from().first->component()->name())
         return true;
     else if(e1->from().first->component()->name() == e2->from().first->component()->name()){
@@ -289,6 +291,12 @@ bool SubGraph::compareEdges(const edge_ptr &e1, const edge_ptr &e2) {
         }
     }
     return false;
+}
+
+bool SubGraph::canMerge(const SubGraph &sg) const{
+    if (this->edges().size() == 1 and sg.edges().size() == 1)
+        return canConnect(sg.edges()[0]);
+    return this->edges().size() == sg.edges().size() and intersection(this->edges(), sg.edges()).size() == this->edges().size()-1;
 }
 
 bool overlap(const SubGraph &sg1, const SubGraph &sg2) {
@@ -311,4 +319,37 @@ std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*> &gra
     }
     total_graph.findClones();
     return total_graph.getAllCloneGroups();
+}
+
+std::vector<std::vector<SubGraph>> getSelectCloneGroups(const std::vector<Graph *> &graphs) {
+    auto clone_groups = getCloneGroups(graphs);
+    std::vector<std::vector<SubGraph>> retValue;
+    for (auto group : clone_groups){
+        if(coveredNodes(group.front()) > 7) // test only front of group, because all other clones in group are identical in form
+            retValue.push_back(group);
+    }
+    return retValue;
+}
+
+unsigned coveredNodes(const SubGraph &sg) {
+    auto edges = sg.edges();
+    auto nodes = sg.nodes();
+    auto map_out = std::map<node_ptr, std::vector<bool>>();
+    auto map_in = std::map<node_ptr, std::vector<bool>>();
+    for (const auto &node : nodes) {
+        auto in = node->component()->getInputPorts().size();
+        auto out = node->component()->getOutPorts().size();
+        map_in[node] = std::vector<bool>(in);
+        map_out[node] = std::vector<bool>(out);
+    }
+    for (const auto &edge : edges) {
+        map_in[edge->to().first][edge->to().second] = true;
+        map_out[edge->from().first][edge->from().second] = true;
+    }
+    unsigned retValue = 0;
+    for(const auto& node : nodes){
+        if(!contains(map_in[node], false) or !contains(map_out[node], false)) //if the vector doesn't contains 0, all the entries are 1
+            retValue++;
+    }
+    return retValue;
 }
