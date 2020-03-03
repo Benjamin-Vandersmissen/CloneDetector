@@ -6,7 +6,7 @@ int main() {
 
     //TODO: - testing!!!
 
-    XMLParser parser("./test/7-segment-display-driver.circ");
+    XMLParser parser("./testing/circuits/7-segment-display-driver.circ");
     parser.parse();
     parser.generateGraphs();
     auto graphs = parser.getGraphs();
