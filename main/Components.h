@@ -137,8 +137,14 @@ public:
      * */
     const std::vector<Coordinate> &getOutPorts() const;
 
+    /**
+     * \brief Simple getter for lib
+     * */
     int lib() const;
 
+    /**
+     * \brief Simple getter for attributes
+     * */
     const std::map<std::string, std::string> &getAttributes() const;
 
     /**
@@ -152,8 +158,14 @@ public:
      * */
     const std::string &uniqueName() const;
 
+    /**
+     * \brief Simple getter for m_loc
+     * */
     const Coordinate &loc() const;
 
+    /**
+     * \brief A component has interchangeable inputs, if COMP(in1, .., in_i) is equivalent to COMP(i2, .., in_i) and all other permutations. This is only true for GateComponents, because they exhibit this trait (CircuitComponents could, butt always)
+     * */
     virtual bool interchangeable_inputs() const = 0;
 };
 

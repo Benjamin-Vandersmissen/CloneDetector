@@ -40,6 +40,7 @@ std::vector<T> intersection(std::vector<T> v1, std::vector<T> v2){
     return v3;
 }
 
+// Call by value, to not change the original vectors, these are typically low size vectors
 template<typename T>
 std::vector<T> difference(std::vector<T> v1, std::vector<T> v2){
     std::vector<T> v3;

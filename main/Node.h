@@ -27,6 +27,9 @@ public:
      * */
     const std::string &getName() const;
 
+    /**
+     * \brief Simple getter for the component
+     * */
     component_ptr component() const;
 };
 

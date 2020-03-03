@@ -191,7 +191,7 @@ void Graph::removeCoveredGroups(unsigned iteration) {
     std::vector<std::size_t > to_delete;
 
     for(auto i = 0; i  < previousGroups.size(); ++i){
-        for(int j = currentGroups.size()-1; j >= 0; --j){
+        for(auto j = currentGroups.size()-1; j >= 0; --j){
             auto group1 = previousGroups[i];
             auto group2 = currentGroups[j];
 
