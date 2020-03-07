@@ -702,20 +702,20 @@ TEST(CloneDetection, easyClones){
 
         {   // edge 1
             auto edge = edges[1];
-            ASSERT_EQ(edge->from().first->getName(), "Pin_3");
-            ASSERT_EQ(edge->from().second, 0);
-
-            ASSERT_EQ(edge->to().first->getName(), "AND Gate_1");
-            ASSERT_EQ(edge->to().second, 0);
-        }
-
-        {   // edge 2
-            auto edge = edges[2];
             ASSERT_EQ(edge->from().first->getName(), "Pin_0");
             ASSERT_EQ(edge->from().second, 0);
 
             ASSERT_EQ(edge->to().first->getName(), "AND Gate_1");
             ASSERT_EQ(edge->to().second, 1);
+        }
+
+        {   // edge 2
+            auto edge = edges[2];
+            ASSERT_EQ(edge->from().first->getName(), "Pin_3");
+            ASSERT_EQ(edge->from().second, 0);
+
+            ASSERT_EQ(edge->to().first->getName(), "AND Gate_1");
+            ASSERT_EQ(edge->to().second, 0);
         }
     }
 }
@@ -740,13 +740,13 @@ TEST(CloneDetection, overlappingClones){
         ASSERT_EQ(edges[0]->from().second, 0);
 
         ASSERT_EQ(edges[0]->to().first->component()->name(), "AND Gate");
-        ASSERT_EQ(edges[0]->to().second, 0);
+        ASSERT_EQ(edges[0]->to().second, 1);
 
         ASSERT_EQ(edges[1]->from().first->component()->name(), "Pin");
         ASSERT_EQ(edges[1]->from().second, 0);
 
         ASSERT_EQ(edges[1]->to().first->component()->name(), "AND Gate");
-        ASSERT_EQ(edges[1]->to().second, 1);
+        ASSERT_EQ(edges[1]->to().second, 0);
     }
 
     {   // cloneGroup 1

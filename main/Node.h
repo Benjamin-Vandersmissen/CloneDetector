@@ -15,8 +15,6 @@
 
 class Node {
 private:
-    std::string m_name;
-
     component_ptr m_component;
 
 public:
@@ -31,6 +29,11 @@ public:
      * \brief Simple getter for the component
      * */
     component_ptr component() const;
+
+    /**
+     * \brief Simple getter for the type
+     * */
+    const std::string& getType() const;
 };
 
 using node_ptr = std::shared_ptr<Node>;
@@ -53,6 +56,12 @@ public:
      * \brief Simple getter for m_to
      * */
     const std::pair<node_ptr, unsigned int> & to() const;
+
+    /**
+     * \brief Get representation of the form "type0 -> type1 (port0/port1)"
+     * */
+
+    std::string text() const;
 };
 
 using edge_ptr = std::shared_ptr<Edge>;
@@ -100,7 +109,7 @@ public:
      *
      * \returns The current working set of SubGraphs
      * */
-    std::vector<SubGraph> prune(const std::vector<SubGraph> &subs, unsigned iteration);
+    std::vector<SubGraph> prune(const std::vector<SubGraph>& subs, unsigned iteration);
 
     /**
      * \brief Extends the working set: for each SubGraph, make an extension with each possible edge such that the SubGraph is connected and no edges are duplicates
@@ -118,6 +127,8 @@ public:
      * \brief returns all CloneGroups as a vector of cloneGroups
      * */
     std::vector<std::vector<SubGraph>> getAllCloneGroups() const;
+
+    void print();
 
     friend std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*>& graphs);
 
@@ -139,6 +150,7 @@ std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*>& gra
   * */
  unsigned coveredNodes(const SubGraph& sg);
 
+ //TODO: should this still be a subclass of Graph
 class SubGraph : public Graph{
 private:
     // node : unique name (in subGraph)
@@ -146,6 +158,23 @@ private:
 
     // node name : count
     std::map<std::string, unsigned> m_counter;
+
+    std::map<node_ptr, std::vector<edge_ptr> > m_graph;
+
+    /**
+     * \brief DFS implementation that makes the representation
+     * */
+    void representation_dfs(std::string &representation, const node_ptr& node, std::map<node_ptr, bool> &visited);
+
+    /**
+     * \brief DFS implementation that calculates the longest path
+     * */
+    void longest_path_dfs(const node_ptr& node, std::map<node_ptr, unsigned int> &paths);
+
+    /**
+     * \brief Create a mapping for a node if it doesn't exist, return the mapping
+     * */
+    std::string map(const node_ptr& node);
 public:
     explicit SubGraph(const edge_ptr &edge);
 
@@ -162,17 +191,7 @@ public:
     /**
      * \brief Try to calculate a canonical label
      * */
-    std::string representation() const;
-
-    /**
-     * \brief remap all the nodes
-     * */
-    void remap();
-
-    /**
-     * \brief used to order edges based on their textual representation
-     * */
-    static bool compareEdges(const edge_ptr &e1, const edge_ptr &e2);
+    std::string representation();
 
     /**
      * \brief size of intersection of edges = size of edges - 1

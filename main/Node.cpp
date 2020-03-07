@@ -8,16 +8,19 @@
 #include <utility>
 
 Node::Node(const component_ptr &component) {
-    m_name = component->uniqueName();
     m_component = component;
 }
 
 const std::string &Node::getName() const {
-    return m_name;
+    return m_component->uniqueName();
 }
 
 component_ptr Node::component() const {
     return m_component;
+}
+
+const std::string &Node::getType() const {
+    return m_component->name();
 }
 
 
@@ -108,6 +111,10 @@ const std::pair<node_ptr, unsigned int> & Edge::to() const {
     return m_to;
 }
 
+std::string Edge::text() const {
+    return m_from.first->getType() + " -> " + m_to.first->getType() + "(" + std::to_string(m_from.second) + "/" + std::to_string(m_to.second);
+}
+
 void Graph::addNode(const node_ptr& node) {
     if (! contains(m_nodes, node))
         m_nodes.push_back(node);
@@ -146,9 +153,9 @@ void Graph::findClones() {
     }
 }
 
-std::vector<SubGraph> Graph::prune(const std::vector<SubGraph> &subs, unsigned iteration) {
+std::vector<SubGraph> Graph::prune(const std::vector<SubGraph>& subs, unsigned iteration) {
     std::map<std::string, std::vector<SubGraph>> mapping;
-    for(const auto& sub : subs){
+    for(auto sub : subs){
         auto representation = sub.representation();
         bool overlapping = false;
         for(const auto& other : mapping[representation])
@@ -191,7 +198,7 @@ void Graph::removeCoveredGroups(unsigned iteration) {
     std::vector<std::size_t > to_delete;
 
     for(auto i = 0; i  < previousGroups.size(); ++i){
-        for(auto j = currentGroups.size()-1; j >= 0; --j){
+        for(auto j = static_cast<long>(currentGroups.size())-1; j >= 0; --j){
             auto group1 = previousGroups[i];
             auto group2 = currentGroups[j];
 
@@ -226,8 +233,9 @@ std::vector<std::vector<SubGraph>> Graph::getAllCloneGroups() const {
 SubGraph::SubGraph(const edge_ptr &edge) {
     m_edges = {edge};
     m_nodes = {edge->from().first, edge->to().first};
+    m_graph[edge->from().first] = {edge};
+    m_graph[edge->to().first] = {};
 
-    remap();
 }
 
 bool SubGraph::canConnect(const edge_ptr &edge) const{
@@ -235,62 +243,103 @@ bool SubGraph::canConnect(const edge_ptr &edge) const{
 }
 
 void SubGraph::addEdge(const edge_ptr &edge) {
+    if (m_graph.find(edge->from().first) == m_graph.end()) {
+        m_graph[edge->from().first] = {edge};
+    }
+    else{
+        auto& vec = m_graph[edge->from().first];
+        bool inserted = false;
+        for(auto it = vec.begin(); it != vec.end(); ++it) {
+            const auto& edge1 = *it;
+            if (edge1->text() > edge->text()) {
+                vec.insert(it, edge);
+                inserted = true;
+                break;
+            }
+        }
+        if(!inserted) vec.push_back(edge);
+    }
+    if (m_graph.find(edge->to().first) == m_graph.end())
+        m_graph[edge->to().first] = {};
     m_edges.push_back(edge);
     if (!contains(m_nodes, edge->from().first)) {
         m_nodes.push_back(edge->from().first);
     } else {
         m_nodes.push_back(edge->to().first);
     }
-    remap();
 }
 
-std::string SubGraph::representation() const {
-    std::string representation;
-    for (const auto& edge : m_edges){
-        representation += m_mapping.at(edge->from().first) + " -> " + m_mapping.at(edge->to().first) + " ("+ std::to_string(edge->from().second) + "/" ;
-        if (! edge->to().first->component()->interchangeable_inputs())
+// Assume no loops in the graph
+void SubGraph::representation_dfs(std::string &representation, const node_ptr& node, std::map<node_ptr, bool> &visited){
+    visited[node] = true;
+    if (m_graph.find(node) == m_graph.end()) return;
+    for(const auto& edge : m_graph.at(node)){
+        auto other = edge->to().first;
+        representation += map(node) + " -> ";
+        representation += map(other) + " ("+ std::to_string(edge->from().second) + "/" ;
+        if (! other->component()->interchangeable_inputs())
             representation += std::to_string(edge->to().second);
-        representation += + ")\n";
+        representation += ")\n";
+        if (!visited[other])
+            representation_dfs(representation, other, visited);
     }
-    return representation ;
 }
 
-void SubGraph::remap() {
-    std::sort(m_edges.begin(), m_edges.end(), compareEdges);
 
+std::string SubGraph::map(const node_ptr& node) {
+    if (m_mapping.find(node) == m_mapping.end()){
+        m_mapping[node] = node->getType() + "_" + std::to_string(m_counter[node->getType()]);
+        m_counter[node->getType()] ++;
+    }
+    return m_mapping[node];
+}
+
+
+void SubGraph::longest_path_dfs(const node_ptr& node, std::map<node_ptr, unsigned int> &paths){
+    for(const auto& edge : m_graph.at(node)){
+        longest_path_dfs(edge->to().first, paths);
+    }
+    if (m_graph.at(node).empty())
+        paths[node] = 0;
+    else{
+        unsigned max=0;
+        for(const auto& edge : m_graph.at(node))
+            max = std::max(max, paths[edge->to().first]);
+        paths[node] = max+1;
+    };
+}
+
+std::string SubGraph::representation() {
+    std::string representation;
     m_mapping.clear();
     m_counter.clear();
-    for(const auto& edge : m_edges) {
-        if (m_mapping.find(edge->from().first) == m_mapping.end()){
-            auto component = edge->from().first->component();
-            m_mapping[edge->from().first] = component->name() + std::to_string(m_counter[component->name()]);
-            m_counter[component->name()]++;
-        }
-        if (m_mapping.find(edge->to().first) == m_mapping.end()){
-            auto component = edge->to().first->component();
-            m_mapping[edge->to().first] = component->name() + std::to_string(m_counter[component->name()]);
-            m_counter[component->name()]++;
-        }
+    std::map<node_ptr, unsigned> longest_paths;
+    for(const auto& node : m_nodes){
+        if (longest_paths.find(node) == longest_paths.end()) // longest path not yet calculated for this node
+            longest_path_dfs(node, longest_paths);
     }
-}
+    std::map<node_ptr, bool> visited;
 
-bool SubGraph::compareEdges(const edge_ptr &e1, const edge_ptr &e2) {
-    if (e1->from().first->component()->name() < e2->from().first->component()->name())
-        return true;
-    else if(e1->from().first->component()->name() == e2->from().first->component()->name()){
-        if (e1->from().second < e2->from().second)
-            return true;
-        else if (e1->from().second == e2->from().second){
-            if (e1->to().first->component()->name() < e2->to().first->component()->name())
-                return true;
-            else if(e1->from().first->component()->interchangeable_inputs()) // don't differentiate between inputs, if they are interchangeable
-                return false;
-            else if (e1->to().first->component()->name() == e1->to().first->component()->name()){
-                return e1->to().second < e2->to().second;
+    std::vector<std::pair<node_ptr, unsigned > > longest_paths_sorted;
+    longest_paths_sorted.reserve(longest_paths.size());
+    for(auto & longest_path : longest_paths) longest_paths_sorted.emplace_back(longest_path);
+
+    std::sort(longest_paths_sorted.begin(), longest_paths_sorted.end(), [this](auto& left, auto& right){ //https://stackoverflow.com/questions/279854/how-do-i-sort-a-vector-of-pairs-based-on-the-second-element-of-the-pair
+        bool retValue = left.second > right.second;
+        if (left.second == right.second){
+            for (auto i = 0; i < left.second; ++i){
+                if(m_graph[left.first][i]->text() != m_graph[right.first][i]->text())
+                    return m_graph[left.first][i]->text() < m_graph[right.first][i]->text();
             }
         }
+        return retValue;
+    });
+
+    for(const auto& pair : longest_paths_sorted){
+        if (!visited[pair.first]) // node not yet used in representation
+            representation_dfs(representation, pair.first, visited);
     }
-    return false;
+    return representation ;
 }
 
 bool SubGraph::canMerge(const SubGraph &sg) const{
@@ -329,6 +378,12 @@ std::vector<std::vector<SubGraph>> getSelectCloneGroups(const std::vector<Graph 
             retValue.push_back(group);
     }
     return retValue;
+}
+
+void Graph::print() {
+    for (const auto& edge : m_edges){
+        std::cout << edge->from().first->getName() << " " << edge->from().second << " => " << edge->to().first->getName() << " " << edge->to().second << std::endl;
+    }
 }
 
 unsigned coveredNodes(const SubGraph &sg) {
