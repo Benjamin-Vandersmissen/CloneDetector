@@ -233,56 +233,21 @@ std::vector<std::vector<SubGraph>> Graph::getAllCloneGroups() const {
     return clones;
 }
 
-//TODO: cleanup constructor, maybe also AddEdge?
+//TODO: phase out nodes(), use m_graph instead?
 SubGraph::SubGraph(const edge_ptr &edge) {
-    auto from = edge->from().first;
-    auto to = edge->to().first;
-    if (m_graph.find(from) == m_graph.end()) {
-        m_graph[from] = {edge};
-    }
-    else{
-        auto& vec = m_graph[from];
-        bool inserted = false;
-        for(auto it = vec.begin(); it != vec.end(); ++it) {
-            const auto& edge1 = *it;
-            if (edge1->text() > edge->text()) {
-                vec.insert(it, edge);
-                inserted = true;
-                break;
-            }
-        }
-        if(!inserted) vec.push_back(edge);
-    }
-    if (!contains(m_outgoing_nodes, from) and !contains(m_incoming_nodes, from)) {
-        m_outgoing_nodes.push_back(from);
-    }
-    if (contains(m_outgoing_nodes, to)) {
-        m_outgoing_nodes.erase(std::find(m_outgoing_nodes.begin(), m_outgoing_nodes.end(), to));
-    }
-    m_incoming_nodes.push_back(to);
-
-    if (m_graph.find(to) == m_graph.end())
-        m_graph[to] = {};
-    m_edges.push_back(edge);
-    if (!contains(m_nodes, from)) {
-        m_nodes.push_back(from);
-    }
-    if (!contains(m_nodes, to)) {
-        m_nodes.push_back(to);
-    }
-
+    addEdge(edge);
 }
 
 bool SubGraph::canConnect(const edge_ptr &edge) const{
-    return (contains(m_nodes, edge->from().first) || contains(m_nodes, edge->to().first)) and not(contains(m_edges, edge));
+    auto nodes = this->nodes();
+    return (contains(nodes, edge->from().first) || contains(nodes, edge->to().first)) and not(contains(m_edges, edge));
 }
 
 void SubGraph::addEdge(const edge_ptr &edge) {
     auto from = edge->from().first;
     auto to = edge->to().first;
-    if (m_graph.find(from) == m_graph.end()) {
-        m_graph[from] = {edge};
-    }
+    if (m_graph.find(from) == m_graph.end()) m_graph[from] = {edge};
+
     else{
         auto& vec = m_graph[from];
         bool inserted = false;
@@ -296,74 +261,36 @@ void SubGraph::addEdge(const edge_ptr &edge) {
         }
         if(!inserted) vec.push_back(edge);
     }
-    if (!contains(m_outgoing_nodes, from) and !contains(m_incoming_nodes, from)) {
-        m_outgoing_nodes.push_back(from);
-    }
-    if (contains(m_outgoing_nodes, to)) {
-        m_outgoing_nodes.erase(std::find(m_outgoing_nodes.begin(), m_outgoing_nodes.end(), to));
-    }
-    m_incoming_nodes.push_back(to);
+    if (!contains(m_outgoing_nodes, from) and !contains(m_incoming_nodes, from)) m_outgoing_nodes.push_back(from);
 
-    if (m_graph.find(to) == m_graph.end())
-        m_graph[to] = {};
+    if (contains(m_outgoing_nodes, to)) m_outgoing_nodes.erase(std::find(m_outgoing_nodes.begin(), m_outgoing_nodes.end(), to));
+
+    if(!contains(m_incoming_nodes, to)) m_incoming_nodes.push_back(to);
+
+    if (m_graph.find(to) == m_graph.end()) m_graph[to] = {};
+
     m_edges.push_back(edge);
-    if (!contains(m_nodes, from)) {
-        m_nodes.push_back(from);
-    }
-    if (!contains(m_nodes, to)) {
-        m_nodes.push_back(to);
-    }
 }
 
 // Assume no loops in the graph
-std::string SubGraph::representation_dfs(const node_ptr &node, std::map<node_ptr, bool> &visited) const{
+std::string SubGraph::representation_dfs(const node_ptr &node) const{
     std::string representation;
     std::vector<std::string> representations;
     for(const auto& edge : m_graph.at(node)){
-        representations.push_back(edge->text() + "  " + representation_dfs(edge->to().first, visited));
+        representations.push_back(edge->text() + "  " + representation_dfs(edge->to().first));
     }
     std::sort(representations.begin(), representations.end());
     for(const auto& s : representations){
         representation += s + "  ";
     }
-    return representation + ">";
+    return representation + ">"; // > is backtrack symbol
 }
 
-
-void SubGraph::longest_path_dfs(const node_ptr& node, std::map<node_ptr, unsigned int> &paths) const{
-    for(const auto& edge : m_graph.at(node)){
-        longest_path_dfs(edge->to().first, paths);
-    }
-    if (m_graph.at(node).empty())
-        paths[node] = 0;
-    else{
-        unsigned max=0;
-        for(const auto& edge : m_graph.at(node))
-            max = std::max(max, paths[edge->to().first]);
-        paths[node] = max+1;
-    };
-}
 
 std::string SubGraph::representation() const {
-    std::map<node_ptr, unsigned> longest_paths;
-    for(const auto& node : m_outgoing_nodes){
-        if (longest_paths.find(node) == longest_paths.end()) // longest path not yet calculated for this node
-            longest_path_dfs(node, longest_paths);
-    }
-    std::map<node_ptr, bool> visited;
-
-    std::vector<std::pair<node_ptr, unsigned > > longest_paths_sorted;
-    longest_paths_sorted.reserve(longest_paths.size());
-    for(auto & longest_path : longest_paths) longest_paths_sorted.emplace_back(longest_path);
-
-    std::sort(longest_paths_sorted.begin(), longest_paths_sorted.end(), [this](auto& left, auto& right){ //https://stackoverflow.com/questions/279854/how-do-i-sort-a-vector-of-pairs-based-on-the-second-element-of-the-pair
-        return left.second > right.second;
-    });
-
     std::vector<std::string> representations;
-    for(const auto& pair : longest_paths_sorted){
-        if (contains(m_outgoing_nodes, pair.first))
-            representations.push_back(representation_dfs(pair.first, visited));
+    for(const auto& node : m_outgoing_nodes){
+        representations.push_back(representation_dfs(node));
     }
     std::string representation;
     std::sort(representations.begin(), representations.end());
@@ -377,6 +304,17 @@ bool SubGraph::canMerge(const SubGraph &sg) const{
     if (this->edges().size() == 1 and sg.edges().size() == 1)
         return canConnect(sg.edges()[0]);
     return this->edges().size() == sg.edges().size() and intersection(this->edges(), sg.edges()).size() == this->edges().size()-1;
+}
+
+const std::vector<edge_ptr> &SubGraph::edges() const {
+    return m_edges;
+}
+
+std::vector<node_ptr> SubGraph::nodes() const {
+    std::vector<node_ptr > nodes;
+    for (const auto& pair : m_graph)
+        nodes.push_back(pair.first);
+    return nodes;
 }
 
 bool overlap(const SubGraph &sg1, const SubGraph &sg2) {
@@ -413,7 +351,7 @@ std::vector<std::vector<SubGraph>> getSelectCloneGroups(const std::vector<Graph 
 
 void Graph::print() {
     for (const auto& edge : m_edges){
-        std::cout << edge->from().first->getName() << " " << edge->from().second << " => " << edge->to().first->getName() << " " << edge->to().second << std::endl;
+        std::cout << edge->text() << std::endl;
     }
 }
 

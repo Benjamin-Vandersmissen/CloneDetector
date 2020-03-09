@@ -150,8 +150,7 @@ std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*>& gra
   * */
  unsigned coveredNodes(const SubGraph& sg);
 
- //TODO: should this still be a subclass of Graph
-class SubGraph : public Graph{
+class SubGraph{
 private:
 
     std::map<node_ptr, std::vector<edge_ptr> > m_graph;
@@ -160,15 +159,12 @@ private:
 
     std::vector<node_ptr> m_incoming_nodes;
 
+    std::vector<edge_ptr> m_edges;
+
     /**
      * \brief DFS implementation that makes the representation
      * */
-    std::string representation_dfs(const node_ptr &node, std::map<node_ptr, bool> &visited) const;
-
-    /**
-     * \brief DFS implementation that calculates the longest path
-     * */
-    void longest_path_dfs(const node_ptr& node, std::map<node_ptr, unsigned int> &paths) const;
+    std::string representation_dfs(const node_ptr &node) const;
 
 public:
     explicit SubGraph(const edge_ptr &edge);
@@ -181,7 +177,7 @@ public:
     /**
      * \brief Add an edge to m_edges, also add the nodes if they aren't in m_nodes
      * */
-    void addEdge(const edge_ptr &edge) override;
+    void addEdge(const edge_ptr &edge);
 
     /**
      * \brief Try to calculate a canonical label
@@ -192,6 +188,16 @@ public:
      * \brief size of intersection of edges = size of edges - 1
      * */
     bool canMerge(const SubGraph& sg) const;
+
+    /**
+     * \brief simple getter for edges
+     * */
+    const std::vector<edge_ptr> &edges() const;
+
+    /**
+     * \brief simple getter for nodes
+     * */
+    std::vector<node_ptr> nodes() const;
 };
 
 /**
