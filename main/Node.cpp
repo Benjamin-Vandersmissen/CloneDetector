@@ -112,7 +112,10 @@ const std::pair<node_ptr, unsigned int> & Edge::to() const {
 }
 
 std::string Edge::text() const {
-    return m_from.first->getType() + " -> " + m_to.first->getType() + "(" + std::to_string(m_from.second) + "/" + std::to_string(m_to.second);
+    std::string retValue = m_from.first->getType() + " -> " + m_to.first->getType() + " (" + std::to_string(m_from.second) + "/";
+    if (!m_to.first->component()->interchangeable_inputs())
+        retValue += std::to_string(m_to.second);
+    return retValue +")";
 }
 
 void Graph::addNode(const node_ptr& node) {
@@ -155,7 +158,7 @@ void Graph::findClones() {
 
 std::vector<SubGraph> Graph::prune(const std::vector<SubGraph>& subs, unsigned iteration) {
     std::map<std::string, std::vector<SubGraph>> mapping;
-    for(auto sub : subs){
+    for(const auto& sub : subs){
         auto representation = sub.representation();
         bool overlapping = false;
         for(const auto& other : mapping[representation])
@@ -230,24 +233,15 @@ std::vector<std::vector<SubGraph>> Graph::getAllCloneGroups() const {
     return clones;
 }
 
+//TODO: cleanup constructor, maybe also AddEdge?
 SubGraph::SubGraph(const edge_ptr &edge) {
-    m_edges = {edge};
-    m_nodes = {edge->from().first, edge->to().first};
-    m_graph[edge->from().first] = {edge};
-    m_graph[edge->to().first] = {};
-
-}
-
-bool SubGraph::canConnect(const edge_ptr &edge) const{
-    return (contains(m_nodes, edge->from().first) || contains(m_nodes, edge->to().first)) and not(contains(m_edges, edge));
-}
-
-void SubGraph::addEdge(const edge_ptr &edge) {
-    if (m_graph.find(edge->from().first) == m_graph.end()) {
-        m_graph[edge->from().first] = {edge};
+    auto from = edge->from().first;
+    auto to = edge->to().first;
+    if (m_graph.find(from) == m_graph.end()) {
+        m_graph[from] = {edge};
     }
     else{
-        auto& vec = m_graph[edge->from().first];
+        auto& vec = m_graph[from];
         bool inserted = false;
         for(auto it = vec.begin(); it != vec.end(); ++it) {
             const auto& edge1 = *it;
@@ -259,43 +253,84 @@ void SubGraph::addEdge(const edge_ptr &edge) {
         }
         if(!inserted) vec.push_back(edge);
     }
-    if (m_graph.find(edge->to().first) == m_graph.end())
-        m_graph[edge->to().first] = {};
+    if (!contains(m_outgoing_nodes, from) and !contains(m_incoming_nodes, from)) {
+        m_outgoing_nodes.push_back(from);
+    }
+    if (contains(m_outgoing_nodes, to)) {
+        m_outgoing_nodes.erase(std::find(m_outgoing_nodes.begin(), m_outgoing_nodes.end(), to));
+    }
+    m_incoming_nodes.push_back(to);
+
+    if (m_graph.find(to) == m_graph.end())
+        m_graph[to] = {};
     m_edges.push_back(edge);
-    if (!contains(m_nodes, edge->from().first)) {
-        m_nodes.push_back(edge->from().first);
-    } else {
-        m_nodes.push_back(edge->to().first);
+    if (!contains(m_nodes, from)) {
+        m_nodes.push_back(from);
+    }
+    if (!contains(m_nodes, to)) {
+        m_nodes.push_back(to);
+    }
+
+}
+
+bool SubGraph::canConnect(const edge_ptr &edge) const{
+    return (contains(m_nodes, edge->from().first) || contains(m_nodes, edge->to().first)) and not(contains(m_edges, edge));
+}
+
+void SubGraph::addEdge(const edge_ptr &edge) {
+    auto from = edge->from().first;
+    auto to = edge->to().first;
+    if (m_graph.find(from) == m_graph.end()) {
+        m_graph[from] = {edge};
+    }
+    else{
+        auto& vec = m_graph[from];
+        bool inserted = false;
+        for(auto it = vec.begin(); it != vec.end(); ++it) {
+            const auto& edge1 = *it;
+            if (edge1->text() > edge->text()) {
+                vec.insert(it, edge);
+                inserted = true;
+                break;
+            }
+        }
+        if(!inserted) vec.push_back(edge);
+    }
+    if (!contains(m_outgoing_nodes, from) and !contains(m_incoming_nodes, from)) {
+        m_outgoing_nodes.push_back(from);
+    }
+    if (contains(m_outgoing_nodes, to)) {
+        m_outgoing_nodes.erase(std::find(m_outgoing_nodes.begin(), m_outgoing_nodes.end(), to));
+    }
+    m_incoming_nodes.push_back(to);
+
+    if (m_graph.find(to) == m_graph.end())
+        m_graph[to] = {};
+    m_edges.push_back(edge);
+    if (!contains(m_nodes, from)) {
+        m_nodes.push_back(from);
+    }
+    if (!contains(m_nodes, to)) {
+        m_nodes.push_back(to);
     }
 }
 
 // Assume no loops in the graph
-void SubGraph::representation_dfs(std::string &representation, const node_ptr& node, std::map<node_ptr, bool> &visited){
-    visited[node] = true;
-    if (m_graph.find(node) == m_graph.end()) return;
+std::string SubGraph::representation_dfs(const node_ptr &node, std::map<node_ptr, bool> &visited) const{
+    std::string representation;
+    std::vector<std::string> representations;
     for(const auto& edge : m_graph.at(node)){
-        auto other = edge->to().first;
-        representation += map(node) + " -> ";
-        representation += map(other) + " ("+ std::to_string(edge->from().second) + "/" ;
-        if (! other->component()->interchangeable_inputs())
-            representation += std::to_string(edge->to().second);
-        representation += ")\n";
-        if (!visited[other])
-            representation_dfs(representation, other, visited);
+        representations.push_back(edge->text() + "  " + representation_dfs(edge->to().first, visited));
     }
+    std::sort(representations.begin(), representations.end());
+    for(const auto& s : representations){
+        representation += s + "  ";
+    }
+    return representation + ">";
 }
 
 
-std::string SubGraph::map(const node_ptr& node) {
-    if (m_mapping.find(node) == m_mapping.end()){
-        m_mapping[node] = node->getType() + "_" + std::to_string(m_counter[node->getType()]);
-        m_counter[node->getType()] ++;
-    }
-    return m_mapping[node];
-}
-
-
-void SubGraph::longest_path_dfs(const node_ptr& node, std::map<node_ptr, unsigned int> &paths){
+void SubGraph::longest_path_dfs(const node_ptr& node, std::map<node_ptr, unsigned int> &paths) const{
     for(const auto& edge : m_graph.at(node)){
         longest_path_dfs(edge->to().first, paths);
     }
@@ -309,12 +344,9 @@ void SubGraph::longest_path_dfs(const node_ptr& node, std::map<node_ptr, unsigne
     };
 }
 
-std::string SubGraph::representation() {
-    std::string representation;
-    m_mapping.clear();
-    m_counter.clear();
+std::string SubGraph::representation() const {
     std::map<node_ptr, unsigned> longest_paths;
-    for(const auto& node : m_nodes){
+    for(const auto& node : m_outgoing_nodes){
         if (longest_paths.find(node) == longest_paths.end()) // longest path not yet calculated for this node
             longest_path_dfs(node, longest_paths);
     }
@@ -325,19 +357,18 @@ std::string SubGraph::representation() {
     for(auto & longest_path : longest_paths) longest_paths_sorted.emplace_back(longest_path);
 
     std::sort(longest_paths_sorted.begin(), longest_paths_sorted.end(), [this](auto& left, auto& right){ //https://stackoverflow.com/questions/279854/how-do-i-sort-a-vector-of-pairs-based-on-the-second-element-of-the-pair
-        bool retValue = left.second > right.second;
-        if (left.second == right.second){
-            for (auto i = 0; i < left.second; ++i){
-                if(m_graph[left.first][i]->text() != m_graph[right.first][i]->text())
-                    return m_graph[left.first][i]->text() < m_graph[right.first][i]->text();
-            }
-        }
-        return retValue;
+        return left.second > right.second;
     });
 
+    std::vector<std::string> representations;
     for(const auto& pair : longest_paths_sorted){
-        if (!visited[pair.first]) // node not yet used in representation
-            representation_dfs(representation, pair.first, visited);
+        if (contains(m_outgoing_nodes, pair.first))
+            representations.push_back(representation_dfs(pair.first, visited));
+    }
+    std::string representation;
+    std::sort(representations.begin(), representations.end());
+    for(const auto& s : representations){
+        representation += s + "  ";
     }
     return representation ;
 }

@@ -153,28 +153,23 @@ std::vector<std::vector<SubGraph>> getCloneGroups(const std::vector<Graph*>& gra
  //TODO: should this still be a subclass of Graph
 class SubGraph : public Graph{
 private:
-    // node : unique name (in subGraph)
-    std::map<node_ptr, std::string> m_mapping;
-
-    // node name : count
-    std::map<std::string, unsigned> m_counter;
 
     std::map<node_ptr, std::vector<edge_ptr> > m_graph;
+
+    std::vector<node_ptr> m_outgoing_nodes;
+
+    std::vector<node_ptr> m_incoming_nodes;
 
     /**
      * \brief DFS implementation that makes the representation
      * */
-    void representation_dfs(std::string &representation, const node_ptr& node, std::map<node_ptr, bool> &visited);
+    std::string representation_dfs(const node_ptr &node, std::map<node_ptr, bool> &visited) const;
 
     /**
      * \brief DFS implementation that calculates the longest path
      * */
-    void longest_path_dfs(const node_ptr& node, std::map<node_ptr, unsigned int> &paths);
+    void longest_path_dfs(const node_ptr& node, std::map<node_ptr, unsigned int> &paths) const;
 
-    /**
-     * \brief Create a mapping for a node if it doesn't exist, return the mapping
-     * */
-    std::string map(const node_ptr& node);
 public:
     explicit SubGraph(const edge_ptr &edge);
 
@@ -191,7 +186,7 @@ public:
     /**
      * \brief Try to calculate a canonical label
      * */
-    std::string representation();
+    std::string representation() const;
 
     /**
      * \brief size of intersection of edges = size of edges - 1

@@ -740,13 +740,13 @@ TEST(CloneDetection, overlappingClones){
         ASSERT_EQ(edges[0]->from().second, 0);
 
         ASSERT_EQ(edges[0]->to().first->component()->name(), "AND Gate");
-        ASSERT_EQ(edges[0]->to().second, 1);
+        ASSERT_EQ(edges[0]->to().second, 0);
 
         ASSERT_EQ(edges[1]->from().first->component()->name(), "Pin");
         ASSERT_EQ(edges[1]->from().second, 0);
 
         ASSERT_EQ(edges[1]->to().first->component()->name(), "AND Gate");
-        ASSERT_EQ(edges[1]->to().second, 0);
+        ASSERT_EQ(edges[1]->to().second, 1);
     }
 
     {   // cloneGroup 1
