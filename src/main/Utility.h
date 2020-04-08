@@ -51,5 +51,32 @@ std::vector<T> difference(std::vector<T> v1, std::vector<T> v2){
     std::set_difference(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(v3));
     return v3;
 }
-using Coordinate = std::pair<unsigned, unsigned>;
+
+struct Coordinate{
+    unsigned x;
+    unsigned y;
+
+    Coordinate()=default;
+
+    Coordinate(unsigned x, unsigned y){ this->x = x; this->y = y;}
+
+    explicit operator std::string() const{ return "(" + std::to_string(x) + ", " + std::to_string(y) + ")";}
+
+    bool operator<(const Coordinate& coord) const{
+        return x < coord.x || (x == coord.x && y < coord.y);
+    }
+
+    bool operator==(const Coordinate& coord) const{
+        return x == coord.x && y == coord.y;
+    }
+};
+
 Coordinate makeCoordinate(unsigned int x, unsigned int y);
+
+template<typename T>
+std::size_t totalSize(std::vector<std::vector<T>> vec_of_vec) {
+    std::size_t total = 0;
+    for(auto vec : vec_of_vec)
+        total += vec.size();
+    return total;
+}

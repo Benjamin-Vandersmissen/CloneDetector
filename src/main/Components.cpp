@@ -117,16 +117,16 @@ void GateComponent::calculatePorts() {
 
     switch(facing){
         case directions ::EAST:
-            relative_center.first -= length;
+            relative_center.x -= length;
             break;
         case directions ::SOUTH:
-            relative_center.second -= length;
+            relative_center.y -= length;
             break;
         case directions ::WEST:
-            relative_center.first += length;
+            relative_center.x += length;
             break;
         case directions ::NORTH:
-            relative_center.second += length;
+            relative_center.y += length;
             break;
     }
 
@@ -156,48 +156,48 @@ void GateComponent::calculatePorts() {
     if (nr_inputs % 2 == 1){  // uneven ports
         auto input = relative_center;
         if (facing == directions::NORTH or facing == directions::SOUTH) { // ports are on x-axis
-            input.first -= offset;
+            input.x -= offset;
             for (auto i = 0; i < nr_inputs; ++i) {
                 m_in.push_back(input);
-                input.first += step;
+                input.x += step;
             }
         }
         else { // ports are on y-axis
-            input.second -= offset;
+            input.y -= offset;
             for (auto i = 0; i < nr_inputs; ++i) {
                 m_in.push_back(input);
-                input.second += step;
+                input.y += step;
             }
         }
     }
     else{  // even ports, skip center
         auto input = relative_center;
         if (facing == directions::NORTH or facing == directions::SOUTH) { // ports are on x-axis
-            input.first -= offset;
+            input.x -= offset;
             for (auto i = 0; i < nr_inputs; ++i) {
-                if (input.first == relative_center.first) {
+                if (input.x == relative_center.x) {
                     if (not(width == 70 and nr_inputs == 4)) { // another edge case
                         i -= 1;
-                        input.first += step;
+                        input.x += step;
                         continue;
                     }
                 }
                 m_in.push_back(input);
-                input.first += step;
+                input.x += step;
             }
         }
         else{ // ports are on y-axis
-            input.second -= offset;
+            input.y -= offset;
             for (auto i = 0; i < nr_inputs; ++i) {
-                if (input.second == relative_center.second) {
+                if (input.y == relative_center.y) {
                     if (not(width == 70 and nr_inputs == 4)) { // another edge case
                         i -= 1;
-                        input.second += step;
+                        input.y += step;
                         continue;
                     }
                 }
                 m_in.push_back(input);
-                input.second += step;
+                input.y += step;
             }
         }
     }
@@ -207,19 +207,19 @@ void GateComponent::calculatePorts() {
         if (contains(m_attributes, "negate" + std::to_string(i))){
             switch(facing){
                 case directions ::EAST:
-                    coord.first -= 10;
+                    coord.x -= 10;
                     break;
 
                 case directions ::WEST:
-                    coord.first += 10;
+                    coord.x += 10;
                     break;
 
                 case directions ::NORTH:
-                    coord.second -= 10;
+                    coord.y -= 10;
                     break;
 
                 case directions ::SOUTH:
-                    coord.second += 10;
+                    coord.y += 10;
                     break;
             }
         }
@@ -267,25 +267,25 @@ void NotComponent::calculatePorts() {
 
     switch(facing){
         case directions ::EAST:
-            relative_center.first -= length;
+            relative_center.x -= length;
             break;
         case directions ::SOUTH:
-            relative_center.second -= length;
+            relative_center.y -= length;
             break;
         case directions ::WEST:
-            relative_center.first += length;
+            relative_center.x += length;
             break;
         case directions ::NORTH:
-            relative_center.second += length;
+            relative_center.y += length;
             break;
     }
     m_in.push_back(relative_center);
 }
 
 bool sortPorts(const component_ptr &comp1, const component_ptr &comp2){
-    if(comp1->m_loc.second < comp2->m_loc.second)
+    if(comp1->m_loc.y < comp2->m_loc.y)
         return true;
-    return comp1->m_loc.first < comp2->m_loc.first and comp1->m_loc.second == comp2->m_loc.second;
+    return comp1->m_loc.x < comp2->m_loc.x and comp1->m_loc.y == comp2->m_loc.y;
 }
 
 const std::string &Component::uniqueName() const {
@@ -351,44 +351,44 @@ void CircuitComponent::calculatePorts() {
     }
 
     // If no outputs, m_loc is the position of the first input, otherwise it's the position of the first output
-    if(ports.second == 0){
-        for(auto i = 0; i < ports.first; ++i){
+    if(ports.first == 0){
+        for(auto i = 0; i < ports.second; ++i){
             if (facing == directions::EAST or facing == directions::WEST)
-                m_in.push_back(makeCoordinate(m_loc.first, m_loc.second + 10*i));
+                m_in.push_back(makeCoordinate(m_loc.x, m_loc.y + 10*i));
             else
-                m_in.push_back(makeCoordinate(m_loc.first + 10*i, m_loc.second));
+                m_in.push_back(makeCoordinate(m_loc.x + 10*i, m_loc.y));
         }
         return;
     }
     for(auto i = 0; i < ports.second; ++i){
         if (facing == directions::EAST or facing == directions::WEST)
-            m_out.push_back(makeCoordinate(m_loc.first, m_loc.second + 10*i));
+            m_out.push_back(makeCoordinate(m_loc.x, m_loc.y + 10*i));
         else
-            m_out.push_back(makeCoordinate(m_loc.first + 10*i, m_loc.second));
+            m_out.push_back(makeCoordinate(m_loc.x + 10*i, m_loc.y));
     }
 
     switch(facing){
         case directions ::EAST:
-            first_in.first -= length;
-            first_in.second += ((ports.second - ports.first) / 2) * 10;
+            first_in.x -= length;
+            first_in.y += ((ports.first - ports.second) / 2) * 10;
             break;
         case directions ::SOUTH:
-            first_in.second -= length;
-            first_in.first += ((ports.second - ports.first) / 2) * 10;
+            first_in.y -= length;
+            first_in.x += ((ports.second - ports.first) / 2) * 10;
             break;
         case directions ::WEST:
-            first_in.first += length;
-            first_in.second += ((ports.second - ports.first) / 2) * 10;
+            first_in.x += length;
+            first_in.y += ((ports.second - ports.first) / 2) * 10;
             break;
         case directions ::NORTH:
-            first_in.second += length;
-            first_in.first += ((ports.second - ports.first) / 2) * 10;
+            first_in.y += length;
+            first_in.x += ((ports.second - ports.first) / 2) * 10;
             break;
     }
     for(auto i = 0; i < ports.first; ++i){
         if (facing == directions::EAST or facing == directions::WEST)
-            m_in.push_back(makeCoordinate(first_in.first, first_in.second + 10*i));
+            m_in.push_back(makeCoordinate(first_in.x, first_in.y + 10*i));
         else
-            m_in.push_back(makeCoordinate(first_in.first + 10*i, first_in.second));
+            m_in.push_back(makeCoordinate(first_in.x + 10*i, first_in.y));
     }
 }
