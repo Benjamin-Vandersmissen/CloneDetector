@@ -21,7 +21,9 @@ private:
 	// nodes with incoming edges
     std::vector<node_ptr> m_incoming_nodes;
 
-    std::vector<edge_ptr> m_edges;
+    std::set<edge_ptr> m_edges;
+
+    edge_ptr m_last_added;
 
     /**
      * \brief DFS implementation that makes the representation
@@ -56,7 +58,7 @@ public:
     /**
      * \brief simple getter for edges
      * */
-    const std::vector<edge_ptr> &edges() const;
+    const std::set<edge_ptr> &edges() const;
 
     /**
      * \brief simple getter for nodes
@@ -65,9 +67,18 @@ public:
 
     bool operator==(const CandidateClone& other) const;
 
+    bool operator<(const CandidateClone& other) const;
+
     std::string circuit() const;
+
+    edge_ptr lastEdge() const;
+
+    edge_ptr lastAdded() const;
+
+    bool isGeneratingParent(const CandidateClone& other) const;
 };
 
+CandidateClone merge(const CandidateClone& c1, const CandidateClone& c2);
 /**
  * \brief Test if the edges of two subgraphs overlap -> non-empty intersection
  * */

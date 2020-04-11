@@ -39,7 +39,13 @@ void CandidateClone::addEdge(const edge_ptr &edge) {
 
     if (m_graph.find(to) == m_graph.end()) m_graph[to] = {};
 
-    m_edges.push_back(edge);
+    m_edges.insert(edge);
+
+    m_last_added = edge;
+}
+
+bool CandidateClone::isGeneratingParent(const CandidateClone &other) const {
+    return this->edges().size() == other.edges().size() + 1 && this->lastEdge() != other.lastEdge();
 }
 
 // Assume no loops in the graph
@@ -70,12 +76,10 @@ std::string CandidateClone::representation() const {
 }
 
 bool CandidateClone::canMerge(const CandidateClone &sg) const{
-    if (this->edges().size() == 1 and sg.edges().size() == 1)
-        return canConnect(sg.edges()[0]);
-    return this->edges().size() == sg.edges().size() and intersection(this->edges(), sg.edges()).size() == this->edges().size()-1;
+    return canConnect(sg.lastEdge());
 }
 
-const std::vector<edge_ptr> &CandidateClone::edges() const {
+const std::set<edge_ptr> &CandidateClone::edges() const {
     return m_edges;
 }
 
@@ -87,11 +91,29 @@ std::vector<node_ptr> CandidateClone::nodes() const {
 }
 
 bool CandidateClone::operator==(const CandidateClone &other) const {
-    return this->m_graph == other.m_graph && this->m_edges == other.m_edges;
+    return this->circuit() == other.circuit() && this->m_graph == other.m_graph && this->m_edges == other.m_edges;
 }
 
+bool CandidateClone::operator<(const CandidateClone &other) const {
+    if (circuit() < other.circuit())
+        return true;
+    else if(circuit() == other.circuit())
+        return std::tie(this->m_edges, this->m_graph) < std::tie(other.m_edges, other.m_graph);
+    else
+        return false;
+}
+
+
 std::string CandidateClone::circuit() const {
-    return m_edges[0]->file() + ": " + m_edges[0]->parent();
+    return lastEdge()->file() + ": " + lastEdge()->parent();
+}
+
+edge_ptr CandidateClone::lastEdge() const {
+    return *m_edges.rbegin();
+}
+
+edge_ptr CandidateClone::lastAdded() const {
+    return m_last_added;
 }
 
 bool overlap(const CandidateClone &sg1, const CandidateClone &sg2) {
@@ -125,6 +147,15 @@ unsigned coveredNodes(const CandidateClone &sg) {
     for(const auto& node : nodes){
         if(!contains(map_in[node], false) or !contains(map_out[node], false)) //if the vector doesn't contains 0, all the entries are 1
             retValue++;
+    }
+    return retValue;
+}
+
+CandidateClone merge(const CandidateClone &c1, const CandidateClone &c2) {
+    std::set<edge_ptr > edges = merge(c1.edges(), c2.edges());
+    CandidateClone retValue;
+    for(const auto& edge : edges){
+        retValue.addEdge(edge);
     }
     return retValue;
 }

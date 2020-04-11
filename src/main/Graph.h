@@ -5,6 +5,7 @@
 #ifndef CLONEDETECTOR_GRAPH_H
 #define CLONEDETECTOR_GRAPH_H
 
+#include <set>
 #include "Node.h"
 #include "Clone.h"
 
@@ -15,7 +16,7 @@ protected:
     std::vector<edge_ptr> m_edges;
 
     // # edges : {representation : clones, ... }
-    std::map<unsigned, std::vector< std::pair<std::string, std::vector<CandidateClone> > > > m_cloneGroups;
+    std::map<unsigned, std::map<std::string, std::set<CandidateClone> > > m_cloneGroups;
 
     std::string m_name;
 
@@ -23,6 +24,8 @@ protected:
 
     // maps a circuit name to all edges
     std::map<std::string, std::vector<edge_ptr>> m_circuit_to_edges;
+
+    std::map<std::string, std::set<CandidateClone> >m_cloned_edges;
 public:
     Graph()=default;
 
@@ -58,41 +61,14 @@ public:
      * */
     void findClones();
 
-    /**
-     * \brief Prunes the working set so only Candidate Clones that have a non-overlapping clone in the working set are still present in the working set. As byproduct, it populates m_cloneGroups[iteration]
-     *
-     * \returns The current working set of Candidate Clones
-     * */
-    std::vector<CandidateClone> prune(const std::vector<CandidateClone>& subs, unsigned iteration);
+    void discover(const CandidateClone& fragment);
 
-    /**
-     * \brief Extends the working set: for each CandidateClone, make an extension with each possible edge such that the Candidate is connected and no edges are duplicates
-     *
-     * \returns The current working set of Candidate
-     * */
-    std::vector<CandidateClone> extend(const std::vector<CandidateClone> &subs);
-
-    /**
-     * \brief Removes Clonegroups of size (iteration-1) if they are fully covered by a cloneGroup of size iteration
-     * */
-    void removeCoveredGroups(unsigned iteration);
-
-    /**
-     * \brief returns all CloneGroups as a vector of cloneGroups
-     * */
-    std::vector<std::vector<CandidateClone>> getAllCloneGroups() const;
-
-	/**
-	* \brief print the representation of the graph
-	*/
-    void print();
-
-    friend std::vector<std::vector<CandidateClone>> getCloneGroups(const std::vector<Graph*>& graphs);
-
-    friend std::vector<std::vector<CandidateClone>> getSelectCloneGroups(const std::vector<Graph*>& graphs);
+    void findClonedEdges(std::set<CandidateClone> &candidates);
 
     void merge(const Graph& graph);
 };
+
+void generateClones(std::vector<Graph*> graphs);
 
 /**
  * \brief generate a dot output for graphs, plots all the graphs in the same stream
@@ -104,16 +80,6 @@ void plot(std::ostream &stream, const std::vector<Graph *> &graphs);
  * */
 void
 plot_clones(std::ostream &stream, const std::vector<Graph *> &graphs, bool onlyClones=false);
-
-/**
- * \brief Calculate the cloneGroups of a vector of Graphs, by merging them in one graph and running Graph::findClones, graph::getAllCloneGroups
- * */
-std::vector<std::vector<CandidateClone>> getCloneGroups(const std::vector<Graph*>& graphs);
-
-/**
- * \brief Calculate the cloneGroups of a vector of Graphs and filtering them
- * */
- std::vector<std::vector<CandidateClone>> getCloneGroups(const std::vector<Graph*>& graphs);
 
 #include "Node.h"
 #include "Clone.h"

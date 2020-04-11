@@ -17,10 +17,10 @@ void calculate_and_plot(const std::string &filename) {
     fs::path output_directory("output"); //TODO: make argument
     fs::path out_prefix = output_directory / path.stem();
     parser.writeTrough(out_prefix.string() + "_annotated.circ");
-    auto clone_groups = getSelectCloneGroups(parser.getGraphs());
-    writeCloneGroups(clone_groups, out_prefix.string());
-
-    drawCloneGroups(clone_groups, "output/clones");
+//    auto clone_groups = getSelectCloneGroups(parser.getGraphs());
+//    writeCloneGroups(clone_groups, out_prefix.string());
+//
+//    drawCloneGroups(clone_groups, "output/clones");
 }
 
 void calculate_and_plot_directory(const fs::path &directory) {
@@ -46,10 +46,11 @@ void calculate_and_plot_directory(const fs::path &directory) {
     fs::path output_directory("output"); //TODO: make argument
     fs::path out_prefix = output_directory / "circuits";
 
-    std::cout << output_directory << std::endl;
-    auto clone_groups = getSelectCloneGroups(parser.getGraphs());
-    writeCloneGroups(clone_groups, out_prefix.string());
-    drawCloneGroups(clone_groups, "output/clones");
+    generateClones(parser.getGraphs());
+
+//    auto clone_groups = getSelectCloneGroups(parser.getGraphs());
+//    writeCloneGroups(clone_groups, out_prefix.string());
+//    drawCloneGroups(clone_groups, "output/clones");
 }
 
 void writeCloneGroups(const std::vector<std::vector<CandidateClone>> &clone_groups, const std::string &filename) {
@@ -58,7 +59,7 @@ void writeCloneGroups(const std::vector<std::vector<CandidateClone>> &clone_grou
     for (const auto & group : clone_groups){
         ofile << "Clone Group " << group_counter << "\n----------------------------------\n\n";
         for(const auto& subGraph : group){
-            ofile << "{ circuit: \"" << subGraph.edges().front()->parent() << "\", file: \"" << subGraph.edges().front()->file() <<"\"\n";
+            ofile << "{ circuit: \"" << subGraph.lastEdge()->parent() << "\", file: \"" << subGraph.lastEdge()->file() <<"\"\n";
             for (const auto& edge : subGraph.edges())
                 ofile << edge->text(true)+ "\n";
             ofile << "}\n\n";
