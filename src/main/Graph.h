@@ -9,20 +9,27 @@
 #include "Clone.h"
 
 class Graph{
-protected:
+private:
     std::vector<node_ptr> m_nodes;
 
     std::vector<edge_ptr> m_edges;
 
     // # edges : {representation : clones, ... }
-    std::map<unsigned, std::vector< std::pair<std::string, std::vector<CandidateClone> > > > m_cloneGroups;
+    std::map<unsigned, std::map< std::string, std::vector<CandidateClone> > > m_cloneGroups;
 
-    std::string m_name;
+    std::string m_name; // circuit name
 
-    std::string m_file;
+    std::string m_file; // file name
 
     // maps a circuit name to all edges
     std::map<std::string, std::vector<edge_ptr>> m_circuit_to_edges;
+
+    // a set of all clones of one edge
+    std::set<CandidateClone> m_cloned_edges;
+
+    std::map<std::string, std::set<std::string>> m_parent_children;
+
+    std::map<std::string, std::set<std::string>> m_previous_parent_children;
 public:
     Graph()=default;
 
@@ -63,14 +70,14 @@ public:
      *
      * \returns The current working set of Candidate Clones
      * */
-    std::vector<CandidateClone> prune(const std::vector<CandidateClone>& subs, unsigned iteration);
+    void prune(std::set<CandidateClone> &candidate_set, unsigned iteration);
 
     /**
      * \brief Extends the working set: for each CandidateClone, make an extension with each possible edge such that the Candidate is connected and no edges are duplicates
      *
      * \returns The current working set of Candidate
      * */
-    std::vector<CandidateClone> extend(const std::vector<CandidateClone> &subs);
+    std::set<CandidateClone> extend(const std::set<CandidateClone> &candidate_set);
 
     /**
      * \brief Removes Clonegroups of size (iteration-1) if they are fully covered by a cloneGroup of size iteration

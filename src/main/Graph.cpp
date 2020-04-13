@@ -22,60 +22,61 @@ void plot(std::ostream &stream, const std::vector<Graph *> &graphs) {
 }
 
 //TODO: fix for overlapping clones
+//TODO: outdated?
 void
 plot_clones(std::ostream &stream, const std::vector<Graph *> &graphs, bool onlyClones) {
-    stream << "digraph Circuit{\n";
-    auto clone_groups = getSelectCloneGroups(graphs);
-
-    std::map<unsigned, unsigned> clone_to_group;
-    std::map<unsigned, std::vector<edge_ptr> > clone_to_edges;
-    std::map<Graph*, std::vector<unsigned> > graph_to_clones;
-
-    std::vector<edge_ptr> clone_edges;
-
-    auto clone_id = 0;
-    for(unsigned group_id = 0; group_id < clone_groups.size(); ++ group_id){
-        auto clone_group = clone_groups[group_id];
-        for(const auto& subgraph : clone_group){
-            clone_to_group[clone_id] = group_id;
-            clone_to_edges[clone_id] = subgraph.edges();
-            clone_edges.insert(clone_edges.begin(), subgraph.edges().begin(), subgraph.edges().end());
-            for(const auto& graph : graphs){
-                if (! intersection(graph->edges(), subgraph.edges()).empty()) {
-                    graph_to_clones[graph].push_back(clone_id);
-                    break;
-                }
-            }
-            clone_id++;
-        }
-    }
-    for (const auto& graph : graphs){
-        stream << "subgraph \"cluster_" << graph->name() << "\" {\n";
-        for(const auto& node: graph->nodes()) {
-            if (!onlyClones)
-                stream << "\"" << node->getName() << "\";\n";
-        }
-
-        auto clones = graph_to_clones[graph];
-        for(auto clone : clones){
-            stream << "subgraph cluster_" << clone << " {\n";
-            stream << "label=\"Clone " << clone_to_group[clone] << "\"\n";
-            stream << "color=red\n";
-            for(const auto& edge : clone_to_edges[clone]){
-                stream <<"\"" <<  edge->from().first->getName() << "\" -> \"" << edge->to().first->getName() << "\" [label=\"" << edge->from().second << "/" << edge->to().second << "\"];\n";
-            }
-            stream << "}\n";
-        }
-
-        for(const auto& edge: graph->edges()){
-            if (!onlyClones and ! contains(clone_edges, edge))
-                stream <<"\"" <<  edge->from().first->getName() << "\" -> \"" << edge->to().first->getName() << "\" [label=\"" << edge->from().second << "/" << edge->to().second << "\"];\n";
-        }
-
-        stream << "label=\"Circuit: " << graph->name() << "\"\n";
-        stream << "}\n";
-    }
-    stream << "}";
+//    stream << "digraph Circuit{\n";
+//    auto clone_groups = getSelectCloneGroups(graphs);
+//
+//    std::map<unsigned, unsigned> clone_to_group;
+//    std::map<unsigned, std::vector<edge_ptr> > clone_to_edges;
+//    std::map<Graph*, std::vector<unsigned> > graph_to_clones;
+//
+//    std::vector<edge_ptr> clone_edges;
+//
+//    auto clone_id = 0;
+//    for(unsigned group_id = 0; group_id < clone_groups.size(); ++ group_id){
+//        auto clone_group = clone_groups[group_id];
+//        for(const auto& subgraph : clone_group){
+//            clone_to_group[clone_id] = group_id;
+//            clone_to_edges[clone_id] = subgraph.edges();
+//            clone_edges.insert(clone_edges.begin(), subgraph.edges().begin(), subgraph.edges().end());
+//            for(const auto& graph : graphs){
+//                if (! intersection(graph->edges(), subgraph.edges()).empty()) {
+//                    graph_to_clones[graph].push_back(clone_id);
+//                    break;
+//                }
+//            }
+//            clone_id++;
+//        }
+//    }
+//    for (const auto& graph : graphs){
+//        stream << "subgraph \"cluster_" << graph->name() << "\" {\n";
+//        for(const auto& node: graph->nodes()) {
+//            if (!onlyClones)
+//                stream << "\"" << node->getName() << "\";\n";
+//        }
+//
+//        auto clones = graph_to_clones[graph];
+//        for(auto clone : clones){
+//            stream << "subgraph cluster_" << clone << " {\n";
+//            stream << "label=\"Clone " << clone_to_group[clone] << "\"\n";
+//            stream << "color=red\n";
+//            for(const auto& edge : clone_to_edges[clone]){
+//                stream <<"\"" <<  edge->from().first->getName() << "\" -> \"" << edge->to().first->getName() << "\" [label=\"" << edge->from().second << "/" << edge->to().second << "\"];\n";
+//            }
+//            stream << "}\n";
+//        }
+//
+//        for(const auto& edge: graph->edges()){
+//            if (!onlyClones and ! contains(clone_edges, edge))
+//                stream <<"\"" <<  edge->from().first->getName() << "\" -> \"" << edge->to().first->getName() << "\" [label=\"" << edge->from().second << "/" << edge->to().second << "\"];\n";
+//        }
+//
+//        stream << "label=\"Circuit: " << graph->name() << "\"\n";
+//        stream << "}\n";
+//    }
+//    stream << "}";
 }
 
 void Graph::addNode(const node_ptr& node) {
@@ -108,14 +109,15 @@ const std::vector<edge_ptr> & Graph::edges() const {
 
 //based on algorithm eScan from https://www.researchgate.net/publication/221553495_Complete_and_accurate_clone_detection_in_graph-based_models
 void Graph::findClones() {
-    std::vector<CandidateClone> subgraphs;
+    std::set<CandidateClone> subgraphs;
     for(const auto& edge: m_edges){
-        subgraphs.emplace_back(edge);
+        subgraphs.emplace(edge);
     }
     auto iteration = 0;
     while(true) {
+        std::cout << iteration << std::endl;
         std::cout << "Before Pruning:" << subgraphs.size() << std::endl;
-        subgraphs = prune(subgraphs, iteration);
+        prune(subgraphs, iteration);
         std::cout << "After Pruning:" << subgraphs.size() << std::endl;
         if(subgraphs.empty()) return;   // No potential clone pairs anymore
         subgraphs = extend(subgraphs);
@@ -125,38 +127,56 @@ void Graph::findClones() {
     }
 }
 
-std::vector<CandidateClone> Graph::prune(const std::vector<CandidateClone>& subs, unsigned iteration) {
+void Graph::prune(std::set<CandidateClone> &candidate_set, unsigned iteration) {
     std::map<std::string, std::vector<CandidateClone>> mapping;
-    for(const auto& sub : subs){
-        auto representation = sub.representation();
+    for(const auto& candidate : candidate_set){
+        //Hacky code, we know that .representation() only caches the representation in the corresponding object without changing anything else
+        //The key of a CandidateClone doesn't depend on the representation, so we can safely edit this value in our object
+        auto& reference = const_cast<CandidateClone&>(candidate);
+        auto representation = reference.representation();
         bool overlapping = false;
         for(const auto& other : mapping[representation])
-            overlapping |= overlap(other, sub);
+            overlapping |= overlap(other, candidate);
         if (! overlapping)
-            mapping[representation].push_back(sub);
+            mapping[representation].push_back(candidate);
     }
 
-    std::vector<CandidateClone > retValue;
+    candidate_set.clear();
 
-    for(auto pair : mapping){
+    for(const auto& pair : mapping){
         if(pair.second.size() > 1){ // a canonical label has more than 1 subGraph -> clones
-            m_cloneGroups[iteration].push_back(pair);
-            retValue.insert(retValue.end(), pair.second.begin(), pair.second.end());
+            m_cloneGroups[iteration].insert(pair);
+            candidate_set.insert(pair.second.begin(), pair.second.end());
         }
     }
-    return retValue;
+    if (iteration == 0)
+        m_cloned_edges = candidate_set;
 }
 
-std::vector<CandidateClone> Graph::extend(const std::vector<CandidateClone> &subs) {
-    std::vector<CandidateClone> retValue;
-    // if and only if subs[i] is a clone of size k, sub[j] is a clone of size k, intersection(sub[i], sub[j]) has a size of k-1, then union(sub[i][, sub[j]) is a candidate clone
-    for (auto i = 0; i < subs.size(); ++i){
-        for(auto j = i+1; j < subs.size(); ++j){
-            if(subs[i].canMerge(subs[j])) {
-                auto edge = difference(subs[j].edges(), subs[i].edges())[0];
-                auto new_sub = subs[i];
-                new_sub.addEdge(edge);
-                retValue.push_back(new_sub);
+std::set<CandidateClone> Graph::extend(const std::set<CandidateClone> &candidate_set) {
+    std::set<CandidateClone> retValue;
+    // if and only if sub1 is a clone of size k, sub2 is a clone of size k, intersection(sub1, sub2) has a size of k-1, then union(sub1, sub2) is a candidate clone
+    m_previous_parent_children = m_parent_children;
+    m_parent_children.clear();
+    for (const auto& candidate1 : candidate_set){
+        for(const auto& candidate2 : m_cloned_edges){
+
+            // 2 candidates can only merge if they are in the same circuit. The candidate_set is sorted on ascending circuit()
+            // This means if candidate1.circuit() < candidate2.circuit(), they can never merge nor can candidate1 merge with a following candidate2'
+            // because candidate1.circuit() <= candidate2.circuit() <= candidate2'.circuit()
+            // If candidate1.circuit() > candidate2.circuit(), there might be another candidate2', such that candidate2.circuit() < candidate2'.circuit() == candidate1.circuit()
+            if (candidate1.circuit() < candidate2.circuit())
+                break;
+            else if(candidate1.circuit() > candidate2.circuit())
+                continue;
+
+            if(candidate1.canMerge(candidate2)) {
+                auto new_candidate = CandidateClone::merge(candidate1, candidate2);
+                retValue.insert(new_candidate);
+                auto reference = const_cast<CandidateClone&>(candidate1); // SEE COMMENT @ Graph::prune
+
+                // Used in removeCoveredGraphs, for faster checking if two graphs are covered
+                m_parent_children[reference.representation()].insert(new_candidate.representation());
             }
         }
     }
@@ -167,27 +187,23 @@ void Graph::removeCoveredGroups(unsigned iteration) {
     auto& previousGroups = m_cloneGroups[iteration-1];
     auto& currentGroups = m_cloneGroups[iteration];
 
-    std::vector<std::size_t > to_delete;
-
-    for(auto i = 0; i  < previousGroups.size(); ++i){
-        for(auto j = static_cast<long>(currentGroups.size())-1; j >= 0; --j){ //TODO: why is this backwards
-            auto group1 = previousGroups[i];
-            auto group2 = currentGroups[j];
-
-            bool covered = true;
-            for(const auto& subgraph : group1.second){
-                covered &= covers(subgraph, group2.second);
-                if (!covered)   break;
-            }
-            if (covered){
-                to_delete.push_back(i);
+    if (iteration < 7){  // these clone groups aren't valuable
+        m_cloneGroups.erase(iteration);
+        return;
+    }
+    auto it = previousGroups.begin();
+    while(it != previousGroups.end()){
+        bool deleted = false;
+        for(const auto& child : m_previous_parent_children[(*it).first]){
+            if (currentGroups.find(child) == currentGroups.end())
+                continue;
+            if (currentGroups.at(child).size() == (*it).second.size()) {
+                it = previousGroups.erase(it);
+                deleted = true;
                 break;
             }
         }
-    }
-    std::reverse(to_delete.begin(), to_delete.end());
-    for(auto index : to_delete){
-        previousGroups.erase(previousGroups.begin()+index);
+        if (!deleted) ++it;
     }
     if(previousGroups.empty())  this->m_cloneGroups.erase(iteration-1);
 }
@@ -214,16 +230,14 @@ std::vector<std::vector<CandidateClone>> getCloneGroups(const std::vector<Graph*
 std::vector<std::vector<CandidateClone>> getSelectCloneGroups(const std::vector<Graph *> &graphs) {
     auto clone_groups = getCloneGroups(graphs);
     std::vector<std::vector<CandidateClone>> retValue;
-    for (auto group : clone_groups){
-        if(coveredNodes(group.front()) > 7) // test only front of group, because all other clones in group are identical in form
-            retValue.push_back(group);
-    }
+    std::cout << clone_groups.size() << std::endl;
+    retValue.insert(retValue.end(), clone_groups.begin(), clone_groups.end());  //TODO: make argument maybe?
     return retValue;
 }
 
 void Graph::print() {
     for (const auto& edge : m_edges){
-        std::cout << edge->text(false) << std::endl;
+        std::cout << edge->representation() << std::endl;
     }
 }
 

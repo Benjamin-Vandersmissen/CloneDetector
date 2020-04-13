@@ -65,13 +65,20 @@ public:
     const std::pair<node_ptr, unsigned int> & to() const;
 
     /**
-     * \brief Get representation of the form "type0 -> type1 (port0/port1)"
-     *
-     * \arg positions -> print the start and end postions of the edge
+     * \brief Get representation of the form "type0 -> type1 [port0/port1]"
+     * If the component has interchangeable inputs, port1 is omitted
      * */
+    std::string representation() const;
 
-    std::string text(bool positions=false) const;
+    /**
+     * \brief Get the representation of the form id0 -> id1 [port0/port1]  (coord0 -> coord1)
+     * If the component has interchangeable inputs, port1 is omitted
+     * */
+    std::string text() const;
 
+    /**
+     * \brief Get a dot representation of the edge
+     * */
     std::string dot() const;
 
     const std::string& parent() const;

@@ -36,13 +36,30 @@ const std::pair<node_ptr, unsigned int> & Edge::to() const {
     return m_to;
 }
 
-std::string Edge::text(bool positions) const {
-    std::string retValue = m_from.first->getType() + " -> " + m_to.first->getType() + " [" + std::to_string(m_from.second) + "/";
+//TODO: fix for input port that is inverted, such as an AND gate
+// Is this a feature to include?
+std::string Edge::representation() const {
+    std::string retValue = m_from.first->getType() + " -> " + m_to.first->getType() + " [" + std::to_string(m_from.second) + " -> ";
+
     if (!m_to.first->component()->interchangeable_inputs())
-        retValue += std::to_string(m_to.second);
+        retValue += std::to_string(m_to.second); //add input port
+    retValue += std::to_string(m_to.first->component()->getInputPorts().size()); //TODO: maybe cleanup
     retValue += "]";
-    if (positions)
-        retValue += "    (" + static_cast<std::string>(m_from_coord) + " -> " + static_cast<std::string>(m_to_coord) + ")";
+    return retValue;
+}
+
+std::string Edge::text() const {
+    std::string retValue = m_from.first->getName() + " -> " + m_to.first->getName() + " [" + std::to_string(m_from.second) + "/";
+
+    if (!m_to.first->component()->interchangeable_inputs())
+        retValue += std::to_string(m_to.second); //add input port
+    retValue += "]    (" + static_cast<std::string>(m_from_coord) + " -> " + static_cast<std::string>(m_to_coord) + ")";
+    return retValue;
+}
+
+std::string Edge::dot() const {
+    std::string retValue = "\"" + this->from().first->getName() + "\" -> \"" + this->to().first->getName() + "\"";
+    retValue += "[label=\"(" + std::to_string(from().second) + "/" + std::to_string(to().second) + ")\"]";
     return retValue;
 }
 
@@ -65,9 +82,4 @@ const std::string &Edge::file() const {
 void Edge::setCoordinates(const Coordinate &from, const Coordinate &to) {
     m_from_coord = from;
     m_to_coord = to;
-}
-
-std::string Edge::dot() const {
-    std::string retValue = "\"" + this->from().first->getName() + "\" -> \"" + this->to().first->getName() + "\"";
-    return retValue;
 }

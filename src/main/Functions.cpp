@@ -7,30 +7,28 @@
 
 namespace fs = std::filesystem;
 
-void calculate_and_plot(const std::string &filename) {
+void calculate_and_plot(const std::string &filename, const fs::path &output_directory) {
     fs::path path(filename);
     std::ifstream ifile(path);
 
     XMLParser parser(filename);
     parser.parse();
     parser.generateGraphs();
-    fs::path output_directory("output"); //TODO: make argument
     fs::path out_prefix = output_directory / path.stem();
     parser.writeTrough(out_prefix.string() + "_annotated.circ");
     auto clone_groups = getSelectCloneGroups(parser.getGraphs());
     writeCloneGroups(clone_groups, out_prefix.string());
 
-    drawCloneGroups(clone_groups, "output/clones");
+    drawCloneGroups(clone_groups, output_directory / "clones");
 }
 
-void calculate_and_plot_directory(const fs::path &directory) {
+void calculate_and_plot_directory(const fs::path &directory, const fs::path &output_directory) {
     auto it = fs::directory_iterator(directory);
     auto entry = *it;
     std::ifstream ifile(entry.path());
 
     XMLParser parser(entry.path().string());
     parser.parse();
-
 
     ++it;
     for(;it != fs::end(it); ++it){
@@ -43,10 +41,8 @@ void calculate_and_plot_directory(const fs::path &directory) {
     }
 
     parser.generateGraphs();
-    fs::path output_directory("output"); //TODO: make argument
     fs::path out_prefix = output_directory / "circuits";
 
-    std::cout << output_directory << std::endl;
     auto clone_groups = getSelectCloneGroups(parser.getGraphs());
     writeCloneGroups(clone_groups, out_prefix.string());
     drawCloneGroups(clone_groups, "output/clones");
@@ -58,9 +54,9 @@ void writeCloneGroups(const std::vector<std::vector<CandidateClone>> &clone_grou
     for (const auto & group : clone_groups){
         ofile << "Clone Group " << group_counter << "\n----------------------------------\n\n";
         for(const auto& subGraph : group){
-            ofile << "{ circuit: \"" << subGraph.edges().front()->parent() << "\", file: \"" << subGraph.edges().front()->file() <<"\"\n";
+            ofile << "{ circuit: \"" << subGraph.firstEdge()->parent() << "\", file: \"" << subGraph.firstEdge()->file() <<"\"\n";
             for (const auto& edge : subGraph.edges())
-                ofile << edge->text(true)+ "\n";
+                ofile << edge->text() + "\n";
             ofile << "}\n\n";
         }
         group_counter++;
@@ -76,7 +72,6 @@ void drawCloneGroups(const std::vector<std::vector<CandidateClone>> &clone_group
         std::ofstream  ofile(path);
         ofile << "digraph clone_" << group_counter << "{\n";
         auto nodes = clone.nodes();
-        //TODO: generate dot file for clone, first all nodes + labels, then all edges
         for(const auto& node : nodes){
             ofile <<"\t\"" << node->getName() << "\"[label=\"" << node->getType() << "\"];\n";
         }

@@ -21,7 +21,9 @@ private:
 	// nodes with incoming edges
     std::vector<node_ptr> m_incoming_nodes;
 
-    std::vector<edge_ptr> m_edges;
+    std::set<edge_ptr> m_edges;
+
+    std::string m_representation;
 
     /**
      * \brief DFS implementation that makes the representation
@@ -44,9 +46,9 @@ public:
     void addEdge(const edge_ptr &edge);
 
     /**
-     * \brief Try to calculate a canonical label
+     * \brief Calculate a canonical label and store it for further usage
      * */
-    std::string representation() const;
+    std::string representation();
 
     /**
      * \brief size of intersection of edges = size of edges - 1
@@ -56,7 +58,7 @@ public:
     /**
      * \brief simple getter for edges
      * */
-    const std::vector<edge_ptr> &edges() const;
+    const std::set<edge_ptr> &edges() const;
 
     /**
      * \brief simple getter for nodes
@@ -65,18 +67,28 @@ public:
 
     bool operator==(const CandidateClone& other) const;
 
+    bool operator<(const CandidateClone& other) const;
+
+    /**
+     * \brief returns *filename* / *circuit*
+     * */
     std::string circuit() const;
+
+    /**
+     * \brief returns the first edge in the set
+     * */
+    const edge_ptr& firstEdge() const;
+
+    /**
+     * \brief merge c1, by making a copy and adding c2
+     * */
+    static CandidateClone merge(const CandidateClone &c1, const CandidateClone &c2);
 };
 
 /**
  * \brief Test if the edges of two subgraphs overlap -> non-empty intersection
  * */
 bool overlap(const CandidateClone &sg1, const CandidateClone &sg2);
-
-/**
- * \brief Test if a subgraph is covered by a vector of subgraphs => 1 subgraph from the vector covers the subgraph -> the subgraph has all edges of the covered subgraph and one edge extra
- * */
-bool covers(const CandidateClone &sg, const std::vector<CandidateClone>& cover);
 
 /**
   * \brief Calculate the covered nodes of a SubGraph, i.e. the nodes that have all outgoing or all incoming edges in the subgraph
