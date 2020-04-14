@@ -114,15 +114,17 @@ void Graph::findClones() {
         subgraphs.emplace(edge);
     }
     auto iteration = 0;
-    while(true) {
+    while(!subgraphs.empty()) {
         std::cout << iteration << std::endl;
         std::cout << "Before Pruning:" << subgraphs.size() << std::endl;
         prune(subgraphs, iteration);
         std::cout << "After Pruning:" << subgraphs.size() << std::endl;
-        if(subgraphs.empty()) return;   // No potential clone pairs anymore
         subgraphs = extend(subgraphs);
         std::cout << "After Extending:" << subgraphs.size() << std::endl;
-        if (iteration > 0) removeCoveredGroups(iteration);
+        if (iteration > 0)
+            removeCoveredGroupsHeuristic(iteration);
+        else
+            m_cloneGroups.erase(0); // not valuable information
         iteration ++;
     }
 }
@@ -183,7 +185,7 @@ std::set<CandidateClone> Graph::extend(const std::set<CandidateClone> &candidate
     return retValue;
 }
 
-void Graph::removeCoveredGroups(unsigned iteration) {
+void Graph::removeCoveredGroupsHeuristic(unsigned iteration) {
     auto& previousGroups = m_cloneGroups[iteration-1];
     auto& currentGroups = m_cloneGroups[iteration];
 
@@ -215,6 +217,25 @@ std::vector<std::vector<CandidateClone>> Graph::getAllCloneGroups() const {
             clones.push_back(group.second);
         }
     }
+
+    auto it = clones.begin();
+    while(it != clones.end()){
+        bool deleted = false;
+        auto it2 = clones.rbegin();
+        while(it2 != clones.rend()){  //loop from back to front, because the last clone groups have the most edges, and are most likely to cover the other group
+            if (it2->begin()->edges().size() == it->begin()->edges().size())
+                break;
+            if (covered(*it, *it2)){
+                deleted = true;
+                it = clones.erase(it);
+                break;
+            }
+            it2++;
+        }
+
+        if (!deleted) ++it;
+    }
+
     return clones;
 }
 

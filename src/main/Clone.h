@@ -91,6 +91,10 @@ public:
 bool overlap(const CandidateClone &sg1, const CandidateClone &sg2);
 
 /**
+ * \brief Test if the edges of group1 are contained in the edges of group2
+ * */
+bool covered(const std::vector<CandidateClone>& group1, const std::vector<CandidateClone>& group2);
+/**
   * \brief Calculate the covered nodes of a SubGraph, i.e. the nodes that have all outgoing or all incoming edges in the subgraph
   * */
  unsigned coveredNodes(const CandidateClone& sg);

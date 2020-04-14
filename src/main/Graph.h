@@ -82,7 +82,7 @@ public:
     /**
      * \brief Removes Clonegroups of size (iteration-1) if they are fully covered by a cloneGroup of size iteration
      * */
-    void removeCoveredGroups(unsigned iteration);
+    void removeCoveredGroupsHeuristic(unsigned iteration);
 
     /**
      * \brief returns all CloneGroups as a vector of cloneGroups

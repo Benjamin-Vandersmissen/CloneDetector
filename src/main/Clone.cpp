@@ -124,6 +124,21 @@ bool overlap(const CandidateClone &sg1, const CandidateClone &sg2) {
     return ! intersection(sg1.edges(), sg2.edges()).empty();
 }
 
+
+bool covered(const std::vector<CandidateClone> &group1, const std::vector<CandidateClone> &group2) {
+    auto edges1 = std::set<edge_ptr>{};
+    auto edges2 = std::set<edge_ptr>{};
+
+    for(const auto& clone : group1){
+        edges1.insert(clone.edges().begin(), clone.edges().end());
+    }
+    for(const auto& clone : group2){
+        edges2.insert(clone.edges().begin(), clone.edges().end());
+    }
+
+    return intersection(edges1, edges2).size() == edges1.size();
+}
+
 unsigned coveredNodes(const CandidateClone &sg) {
     auto edges = sg.edges();
     auto nodes = sg.nodes();
