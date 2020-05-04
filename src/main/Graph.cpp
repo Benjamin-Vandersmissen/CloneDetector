@@ -157,7 +157,6 @@ void Graph::prune(std::set<CandidateClone> &candidate_set, unsigned iteration) {
 
 std::set<CandidateClone> Graph::extend(const std::set<CandidateClone> &candidate_set) {
     std::set<CandidateClone> retValue;
-    // if and only if sub1 is a clone of size k, sub2 is a clone of size k, intersection(sub1, sub2) has a size of k-1, then union(sub1, sub2) is a candidate clone
     m_previous_parent_children = m_parent_children;
     m_parent_children.clear();
     for (const auto& candidate1 : candidate_set){
