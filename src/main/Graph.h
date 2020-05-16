@@ -30,6 +30,8 @@ private:
     std::map<std::string, std::set<std::string>> m_parent_children;
 
     std::map<std::string, std::set<std::string>> m_previous_parent_children;
+
+    unsigned long m_candidate_count = 0;
 public:
     Graph()=default;
 

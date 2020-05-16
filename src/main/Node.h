@@ -51,8 +51,10 @@ private:
     Coordinate m_from_coord;
 
     Coordinate m_to_coord;
+
+    bool m_negated;
 public:
-    Edge(const node_ptr& from, unsigned outport, const node_ptr &to, unsigned inport);
+    Edge(const node_ptr& from, unsigned outport, const node_ptr &to, unsigned inport, bool negated=false);
 
     /**
      * \brief Simple getter for m_from

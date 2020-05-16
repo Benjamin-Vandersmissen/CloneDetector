@@ -3,10 +3,6 @@
 //
 
 #include "Node.h"
-#include "XMLParser.h"
-#include "Graph.h"
-#include "Clone.h"
-
 #include <utility>
 
 Node::Node(const component_ptr &component) {
@@ -26,7 +22,7 @@ const std::string &Node::getType() const {
 }
 
 
-Edge::Edge(const node_ptr& from, unsigned outport, const node_ptr &to, unsigned inport): m_from{from, outport}, m_to{to, inport} {}
+Edge::Edge(const node_ptr& from, unsigned outport, const node_ptr &to, unsigned inport, bool negated): m_from{from, outport}, m_to{to, inport}, m_negated{negated} {}
 
 const std::pair<node_ptr, unsigned int> & Edge::from() const {
     return m_from;
@@ -36,10 +32,8 @@ const std::pair<node_ptr, unsigned int> & Edge::to() const {
     return m_to;
 }
 
-//TODO: fix for input port that is inverted, such as an AND gate
-// Is this a feature to include?
 std::string Edge::representation() const {
-    std::string retValue = m_from.first->getType() + " -> " + m_to.first->getType() + " [" + std::to_string(m_from.second) + " -> ";
+    std::string retValue = m_from.first->getType() + " -> ! " + m_to.first->getType() + " [" + std::to_string(m_from.second) + " -> ";
 
     if (!m_to.first->component()->interchangeable_inputs())
         retValue += std::to_string(m_to.second); //add input port

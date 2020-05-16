@@ -112,6 +112,7 @@ void Graph::findClones() {
     std::set<CandidateClone> subgraphs;
     for(const auto& edge: m_edges){
         subgraphs.emplace(edge);
+        m_candidate_count++;
     }
     auto iteration = 0;
     while(!subgraphs.empty()) {
@@ -127,6 +128,7 @@ void Graph::findClones() {
             m_cloneGroups.erase(0); // not valuable information
         iteration ++;
     }
+    std::cout << "GENERATED CANDIDATES: " << m_candidate_count << std::endl;
 }
 
 void Graph::prune(std::set<CandidateClone> &candidate_set, unsigned iteration) {
@@ -172,6 +174,7 @@ std::set<CandidateClone> Graph::extend(const std::set<CandidateClone> &candidate
                 continue;
 
             if(candidate1.canMerge(candidate2)) {
+                m_candidate_count++;
                 auto new_candidate = CandidateClone::merge(candidate1, candidate2);
                 retValue.insert(new_candidate);
                 auto reference = const_cast<CandidateClone&>(candidate1); // SEE COMMENT @ Graph::prune

@@ -308,6 +308,10 @@ const std::map<std::string, std::string> &Component::getAttributes() const {
     return m_attributes;
 }
 
+bool Component::negated(int index) {
+    return contains(m_attributes, "negate"+std::to_string(index));
+}
+
 PinComponent::PinComponent(int lib, const std::string &name, const std::string &loc) : Component(lib, name, loc) {}
 
 void PinComponent::calculatePorts() {
