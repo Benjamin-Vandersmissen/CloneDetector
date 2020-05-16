@@ -33,7 +33,10 @@ const std::pair<node_ptr, unsigned int> & Edge::to() const {
 }
 
 std::string Edge::representation() const {
-    std::string retValue = m_from.first->getType() + " -> ! " + m_to.first->getType() + " [" + std::to_string(m_from.second) + " -> ";
+    std::string retValue = m_from.first->getType() + " -> ";
+    if (m_negated)
+        retValue += "! ";
+    retValue += m_to.first->getType() + " [" + std::to_string(m_from.second) + " -> ";
 
     if (!m_to.first->component()->interchangeable_inputs())
         retValue += std::to_string(m_to.second); //add input port
