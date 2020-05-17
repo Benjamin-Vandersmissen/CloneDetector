@@ -169,6 +169,7 @@ void Graph::findClonedEdges(std::set<CandidateClone> &candidates) {
     }
     m_cloned_edges = candidates;
     this->m_candidate_count = candidates.size();
+    this->m_temp_candidates = candidates;
 }
 
 void Graph::discover(const CandidateClone &fragment) {
