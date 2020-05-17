@@ -51,8 +51,10 @@ private:
     Coordinate m_from_coord;
 
     Coordinate m_to_coord;
+    
+    bool m_negated;
 public:
-    Edge(const node_ptr& from, unsigned outport, const node_ptr &to, unsigned inport);
+    Edge(const node_ptr& from, unsigned outport, const node_ptr &to, unsigned inport, bool negated=false);
 
     /**
      * \brief Simple getter for m_from
@@ -65,13 +67,20 @@ public:
     const std::pair<node_ptr, unsigned int> & to() const;
 
     /**
-     * \brief Get representation of the form "type0 -> type1 (port0/port1)"
-     *
-     * \arg positions -> print the start and end postions of the edge
+     * \brief Get representation of the form "type0 -> type1 [port0/port1]"
+     * If the component has interchangeable inputs, port1 is omitted
      * */
+    std::string representation() const;
 
-    std::string text(bool positions=false) const;
+    /**
+     * \brief Get the representation of the form id0 -> id1 [port0/port1]  (coord0 -> coord1)
+     * If the component has interchangeable inputs, port1 is omitted
+     * */
+    std::string text() const;
 
+    /**
+     * \brief Get a dot representation of the edge
+     * */
     std::string dot() const;
 
     const std::string& parent() const;
@@ -83,8 +92,13 @@ public:
     const std::string& file() const;
 
     void setCoordinates(const Coordinate& from, const Coordinate& to);
+
+    friend bool operator<(const Edge& e1, const Edge& e2);
 };
 
+bool operator<(const Edge& e1, const Edge& e2);
 using edge_ptr = std::shared_ptr<Edge>;
+
+auto edge_cmp = [](edge_ptr e1, edge_ptr e2) { return *e1 < *e2;};
 
 #endif //CLONEDETECTOR_NODE_H

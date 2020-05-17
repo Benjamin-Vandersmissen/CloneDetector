@@ -13,4 +13,8 @@ bool contains(const std::map<std::string, std::string>& map, const std::string& 
     return map.find(item) != map.end();
 }
 
+bool contains(const std::string &string, const std::string &item) {
+    return string.find(item) != std::string::npos;
+}
+
 

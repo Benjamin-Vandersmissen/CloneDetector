@@ -23,7 +23,7 @@ void CandidateClone::addEdge(const edge_ptr &edge) {
         bool inserted = false;
         for(auto it = vec.begin(); it != vec.end(); ++it) {
             const auto& edge1 = *it;
-            if (edge1->text(false) > edge->text(false)) {
+            if (edge1->representation() > edge->representation()) {
                 vec.insert(it, edge);
                 inserted = true;
                 break;
@@ -40,12 +40,6 @@ void CandidateClone::addEdge(const edge_ptr &edge) {
     if (m_graph.find(to) == m_graph.end()) m_graph[to] = {};
 
     m_edges.insert(edge);
-
-    m_last_added = edge;
-}
-
-bool CandidateClone::isGeneratingParent(const CandidateClone &other) const {
-    return this->edges().size() == other.edges().size() + 1 && this->lastEdge() != other.lastEdge();
 }
 
 // Assume no loops in the graph
@@ -53,7 +47,7 @@ std::string CandidateClone::representation_dfs(const node_ptr &node) const{
     std::string representation;
     std::vector<std::string> representations;
     for(const auto& edge : m_graph.at(node)){
-        representations.push_back(edge->text(false) + "  " + representation_dfs(edge->to().first));
+        representations.push_back(edge->representation() + "  " + representation_dfs(edge->to().first));
     }
     std::sort(representations.begin(), representations.end());
     for(const auto& s : representations){
@@ -62,21 +56,26 @@ std::string CandidateClone::representation_dfs(const node_ptr &node) const{
     return representation + ">"; // > is backtrack symbol
 }
 
-std::string CandidateClone::representation() const {
-    std::vector<std::string> representations;
-    for(const auto& node : m_outgoing_nodes){
-        representations.push_back(representation_dfs(node));
+std::string CandidateClone::representation(){
+    if (m_representation.empty()) {
+        std::vector<std::string> representations;
+        for (const auto &node : m_outgoing_nodes) {
+            representations.push_back(representation_dfs(node));
+        }
+        std::string representation;
+        std::sort(representations.begin(), representations.end());
+        for (const auto &s : representations) {
+            representation += s + "  ";
+        }
+        m_representation = representation;
     }
-    std::string representation;
-    std::sort(representations.begin(), representations.end());
-    for(const auto& s : representations){
-        representation += s + "  ";
-    }
-    return representation ;
+    return m_representation;
 }
 
 bool CandidateClone::canMerge(const CandidateClone &sg) const{
-    return canConnect(sg.lastEdge());
+    // sg.firstEdge needs to be higher, so for example A->B->C-> D is only generated from A->B->C, not from B->C->D
+    // We will use this for removing the duplicate groups
+    return canConnect(sg.firstEdge());
 }
 
 const std::set<edge_ptr> &CandidateClone::edges() const {
@@ -95,37 +94,57 @@ bool CandidateClone::operator==(const CandidateClone &other) const {
 }
 
 bool CandidateClone::operator<(const CandidateClone &other) const {
-    if (circuit() < other.circuit())
+    if(this->circuit() < other.circuit())
         return true;
-    else if(circuit() == other.circuit())
-        return std::tie(this->m_edges, this->m_graph) < std::tie(other.m_edges, other.m_graph);
-    else
+    else if (this->circuit() > other.circuit())
         return false;
+
+    else return std::tie(this->m_graph, this->m_edges) < std::tie(other.m_graph, other.m_edges);
 }
 
-
 std::string CandidateClone::circuit() const {
-    return lastEdge()->file() + ": " + lastEdge()->parent();
+    return firstEdge()->file() + ": " + firstEdge()->parent();
+}
+
+const edge_ptr &CandidateClone::firstEdge() const {
+    return *(m_edges.begin());
+}
+
+CandidateClone CandidateClone::merge(const CandidateClone &c1, const CandidateClone &c2) {
+    CandidateClone c3;
+    auto edges = ::merge(c1.edges(), c2.edges());
+
+    for(const auto& edge: edges){
+        c3.addEdge(edge);
+    }
+    return c3;
 }
 
 edge_ptr CandidateClone::lastEdge() const {
     return *m_edges.rbegin();
 }
 
-edge_ptr CandidateClone::lastAdded() const {
-    return m_last_added;
+bool CandidateClone::isGeneratingParent(const CandidateClone &other) const {
+    return this->edges().size() == other.edges().size() + 1 && intersection(this->edges(), other.edges()).size() == other.edges().size() && this->lastEdge() != other.lastEdge();
 }
 
 bool overlap(const CandidateClone &sg1, const CandidateClone &sg2) {
     return ! intersection(sg1.edges(), sg2.edges()).empty();
 }
 
-bool covers(const CandidateClone &sg, const std::vector<CandidateClone> &cover) {
-    for (const auto& sg2 : cover){
-        if (intersection(sg.edges(), sg2.edges()).size() == sg.edges().size()) return true;
+
+bool covered(const std::vector<CandidateClone> &group1, const std::vector<CandidateClone> &group2) {
+    auto edges1 = std::set<edge_ptr>{};
+    auto edges2 = std::set<edge_ptr>{};
+
+    for(const auto& clone : group1){
+        edges1.insert(clone.edges().begin(), clone.edges().end());
+    }
+    for(const auto& clone : group2){
+        edges2.insert(clone.edges().begin(), clone.edges().end());
     }
 
-    return false;
+    return intersection(edges1, edges2).size() == edges1.size();
 }
 
 unsigned coveredNodes(const CandidateClone &sg) {
@@ -147,15 +166,6 @@ unsigned coveredNodes(const CandidateClone &sg) {
     for(const auto& node : nodes){
         if(!contains(map_in[node], false) or !contains(map_out[node], false)) //if the vector doesn't contains 0, all the entries are 1
             retValue++;
-    }
-    return retValue;
-}
-
-CandidateClone merge(const CandidateClone &c1, const CandidateClone &c2) {
-    std::set<edge_ptr > edges = merge(c1.edges(), c2.edges());
-    CandidateClone retValue;
-    for(const auto& edge : edges){
-        retValue.addEdge(edge);
     }
     return retValue;
 }

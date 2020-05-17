@@ -18,14 +18,18 @@ protected:
     // # edges : {representation : clones, ... }
     std::map<unsigned, std::map<std::string, std::set<CandidateClone> > > m_cloneGroups;
 
+    std::set<CandidateClone> m_temp_candidates;
+
     std::string m_name;
 
     std::string m_file;
 
+    unsigned long m_candidate_count = 0;
+
     // maps a circuit name to all edges
     std::map<std::string, std::vector<edge_ptr>> m_circuit_to_edges;
 
-    std::map<std::string, std::set<CandidateClone> >m_cloned_edges;
+    std::set<CandidateClone> m_cloned_edges;
 public:
     Graph()=default;
 
@@ -66,6 +70,16 @@ public:
     void findClonedEdges(std::set<CandidateClone> &candidates);
 
     void merge(const Graph& graph);
+
+    /**
+ * \brief returns all CloneGroups as a vector of cloneGroups
+ * */
+    std::vector<std::vector<CandidateClone>> getAllCloneGroups() const;
+
+
+    friend std::vector<std::vector<CandidateClone>> getCloneGroups(const std::vector<Graph*>& graphs);
+
+    friend std::vector<std::vector<CandidateClone>> getSelectCloneGroups(const std::vector<Graph*>& graphs);
 };
 
 void generateClones(std::vector<Graph*> graphs);
@@ -80,6 +94,16 @@ void plot(std::ostream &stream, const std::vector<Graph *> &graphs);
  * */
 void
 plot_clones(std::ostream &stream, const std::vector<Graph *> &graphs, bool onlyClones=false);
+
+/**
+ * \brief Calculate the cloneGroups of a vector of Graphs, by merging them in one graph and running Graph::findClones, graph::getAllCloneGroups
+ * */
+std::vector<std::vector<CandidateClone>> getCloneGroups(const std::vector<Graph*>& graphs);
+
+/**
+ * \brief Calculate the cloneGroups of a vector of Graphs and filtering them
+ * */
+ std::vector<std::vector<CandidateClone>> getSelectCloneGroups(const std::vector<Graph*>& graphs);
 
 #include "Node.h"
 #include "Clone.h"

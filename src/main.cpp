@@ -23,6 +23,6 @@ int main() {
 //
 //    parser.getAnnotatedClones("./output/test.circ", "./output/clones.txt");
 
-    calculate_and_plot_directory("test_files");
+    calculate_and_plot_directory("input", "output");
     return 0;
 }

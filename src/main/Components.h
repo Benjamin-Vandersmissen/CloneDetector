@@ -164,6 +164,11 @@ public:
     const Coordinate &loc() const;
 
     /**
+     * \brief is this input port negated?
+     * */
+    bool negated(int index);
+
+    /**
      * \brief A component has interchangeable inputs, if COMP(in1, .., in_i) is equivalent to COMP(i2, .., in_i) and all other permutations. This is only true for GateComponents, because they exhibit this trait (CircuitComponents could, butt always)
      * */
     virtual bool interchangeable_inputs() const = 0;

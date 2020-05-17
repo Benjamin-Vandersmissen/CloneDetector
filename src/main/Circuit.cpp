@@ -63,7 +63,8 @@ void Circuit::generateGraph() {
                     if (component->canOutputTo(other_component, outport)) {
                         auto inPort = component->connectedInPort(other_component, outport);
                         Coordinate end_coord = other_component->getInputPorts()[inPort];
-                        auto e = std::make_shared<Edge>(m_component_map[component], outport, m_component_map[other_component], inPort);
+                        auto negated = other_component->negated(inPort); 
+                        auto e = std::make_shared<Edge>(m_component_map[component], outport, m_component_map[other_component], inPort, negated);
                         e->setCoordinates(start_coord, end_coord);
                         m_graph->addEdge(e);
                     }
@@ -74,7 +75,8 @@ void Circuit::generateGraph() {
                         if (wire->canOutputTo(other_component)) {
                             auto inPort = wire->connectedPort(other_component);
                             Coordinate end_coord = other_component->getInputPorts()[inPort];
-                            auto e = std::make_shared<Edge>(m_component_map[component], outport, m_component_map[other_component], inPort);
+                            auto negated = other_component->negated(inPort);
+                            auto e = std::make_shared<Edge>(m_component_map[component], outport, m_component_map[other_component], inPort, negated);
                             e->setCoordinates(start_coord, end_coord);
                             m_graph->addEdge(e);
                         }

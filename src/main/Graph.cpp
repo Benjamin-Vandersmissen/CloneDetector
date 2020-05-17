@@ -122,10 +122,16 @@ void Graph::findClones() {
     }
     findClonedEdges(candidates);
 
+    auto i = 0;
     for(const auto& candidate: candidates){
+        i++;
         discover(candidate);
+        std::cout <<"Candidate" << i << std::endl;
+        std::cout << this->m_candidate_count << std::endl;
     }
-    std::cout << "TEST" << std::endl;
+    std::cout << "GENERATED CANDIDATES: " << m_candidate_count << std::endl;
+    std::cout << "UNIQUE CANDIDATES: " << m_temp_candidates.size() << std::endl;
+
 }
 
 Graph::Graph(std::string name, std::string file) : m_name(std::move(name)), m_file(std::move(file)){}
@@ -147,43 +153,64 @@ void Graph::findClonedEdges(std::set<CandidateClone> &candidates) {
  * populate m_cloned_edges and m_cloneGroups[0]
  * */
 
+    std::map<std::string, std::set<CandidateClone> > cloned_edges_map;
+
     for(const auto& candidate : candidates){
-        auto label = candidate.representation();
-        m_cloned_edges[label].insert(candidate);
+        auto temp = const_cast<CandidateClone&>(candidate);
+        auto label = temp.representation();
+        cloned_edges_map[label].insert(candidate);
     }
     candidates.clear();
-    for(const auto& pair : m_cloned_edges){
-        candidates.insert(pair.second.begin(), pair.second.end());
-        m_cloneGroups[1].insert(pair);
+    for(const auto& pair : cloned_edges_map){
+        if (pair.second.size() > 1){
+            candidates.insert(pair.second.begin(), pair.second.end());
+            m_cloneGroups[1].insert(pair);
+        }
     }
+    m_cloned_edges = candidates;
+    this->m_candidate_count = candidates.size();
 }
 
 void Graph::discover(const CandidateClone &fragment) {
 
-    std::cout << "depth: " << fragment.edges().size() << std::endl;
-    auto clone_group = m_cloneGroups[fragment.edges().size()][fragment.representation()];
+    auto temp = const_cast<CandidateClone&>(fragment);
+    auto clone_group = m_cloneGroups[fragment.edges().size()][temp.representation()];  // get Clonegroup(fragment)
 
     std::set<CandidateClone> candidates;
 
+//    std::cout << "Fragment: ";
+//    for(auto edge : fragment.edges())
+//        std::cout << "edge_" << std::distance(m_cloned_edges.begin(), std::find(m_cloned_edges.begin(), m_cloned_edges.end(), CandidateClone(edge))) << " - ";
+//    std::cout << "\n";
+    std::set<CandidateClone> generated_from_fragment;
     for(const auto& other : clone_group){
-        for(const auto& pair : m_cloned_edges){
-            for(const auto& extension : pair.second){
-                if (other.circuit() < extension.circuit()) // ordered on circuit(), so lower -> skip, higher -> break
-                    continue;
-                else if(other.circuit() > extension.circuit())
-                    break;
+        for(const auto& extension : m_cloned_edges) {
+            if (extension.circuit() < other.circuit()) // ordered on circuit(), so lower -> skip, higher -> break
+                continue;
 
-                if (extension.lastEdge() <= other.lastEdge())
-                    continue;
+            else if (extension.circuit() > other.circuit())
+                break;
 
-                if (other.canMerge(extension))
-                    candidates.insert(::merge(other, extension));
+            if (other.canMerge(extension)) {
+                auto merged = CandidateClone::merge(other, extension);
+                if (other == fragment && merged.lastEdge() == extension.lastEdge())
+                    generated_from_fragment.insert(merged);
+                this->m_candidate_count++;
+                candidates.insert(merged);
+                m_temp_candidates.insert(merged);
+                if (this->m_candidate_count%1000 == 0) std::cout << this->m_candidate_count <<" " << this->m_temp_candidates.size() <<  std::endl;
             }
         }
     }
-    std::map<std::string, std::set<CandidateClone>> temp_clone_group;
+//    for(auto candidate : candidates){
+//        for(auto edge : candidate.edges())
+//            std::cout << "edge_" << std::distance(m_cloned_edges.begin(), std::find(m_cloned_edges.begin(), m_cloned_edges.end(), CandidateClone(edge))) << " - ";;
+//        std::cout << "\n";
+//    }
+    std::map<std::string, std::set<CandidateClone>> temp_clone_group; //TODO: ENSURE Non-overlapping
     for(const auto& candidate : candidates){
-        temp_clone_group[candidate.representation()].insert(candidate);
+        auto temp = const_cast<CandidateClone&>(candidate);
+        temp_clone_group[temp.representation()].insert(candidate);
     }
 
     auto it = temp_clone_group.begin();
@@ -199,16 +226,68 @@ void Graph::discover(const CandidateClone &fragment) {
     }
 
 
-//    for(auto candidate : candidates)
-//        std::cout << candidate.representation() << std::endl;
-
     m_cloneGroups[fragment.edges().size()+1].insert(temp_clone_group.begin(), temp_clone_group.end());
 
-    for(auto i =  0; i < candidates.size(); ++i){
-        auto new_fragment = *(std::next(candidates.begin(), i));
-        if (new_fragment.isGeneratingParent(fragment))
-            discover(new_fragment);
-        else
-            std::cout <<"aa" << std::endl;
-    }
+    for(const auto& new_fragment : generated_from_fragment)
+        discover(new_fragment);
+//    std::cout << "<-\n";
 }
+
+std::vector<std::vector<CandidateClone>> Graph::getAllCloneGroups() const {
+    std::vector<std::vector<CandidateClone>> clones;
+    for(const auto& pair : m_cloneGroups){ // all clone groups with same iteration
+        for(const auto& group : pair.second){ // a clone group
+            auto temp = std::vector<CandidateClone>(group.second.begin(), group.second.end());
+            clones.push_back(temp);
+        }
+    }
+
+    auto it = clones.begin();
+    while(it != clones.end()){
+        bool deleted = false;
+        auto it2 = clones.rbegin();
+        while(it2 != clones.rend()){  //loop from back to front, because the last clone groups have the most edges, and are most likely to cover the other group
+            if (it2->begin()->edges().size() == it->begin()->edges().size())
+                break;
+            if (covered(*it, *it2)){
+                deleted = true;
+                it = clones.erase(it);
+                break;
+            }
+            it2++;
+        }
+
+        if (!deleted) ++it;
+    }
+
+    return clones;
+}
+
+std::vector<std::vector<CandidateClone>> getCloneGroups(const std::vector<Graph*> &graphs) {
+    Graph total_graph;
+    for(const auto& graph: graphs){
+        total_graph.merge(*graph);
+    }
+    total_graph.findClones();
+    return total_graph.getAllCloneGroups();
+}
+
+std::vector<std::vector<CandidateClone>> getSelectCloneGroups(const std::vector<Graph *> &graphs) {
+    auto clone_groups = getCloneGroups(graphs);
+    std::vector<std::vector<CandidateClone>> retValue;
+    std::cout << clone_groups.size() << std::endl;
+    retValue.insert(retValue.end(), clone_groups.begin(), clone_groups.end());  //TODO: make argument maybe?
+    return retValue;
+}
+
+//void Graph::print() {
+//    for (const auto& edge : m_edges){
+//        std::cout << edge->representation() << std::endl;
+//    }
+//}
+
+//Graph::Graph(std::string name, std::string file) : m_name(std::move(name)), m_file(std::move(file)){}
+//
+//const std::string &Graph::name() const {
+//    return m_name;
+//}
