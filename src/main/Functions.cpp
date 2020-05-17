@@ -29,6 +29,8 @@ void calculate_and_plot_directory(const fs::path &directory, const fs::path &out
 
     XMLParser parser(entry.path().string());
     parser.parse();
+    fs::path out_prefix = output_directory / entry.path().stem();
+    parser.writeTrough(out_prefix.string() + "_annotated.circ");
 
     ++it;
     for(;it != fs::end(it); ++it){
@@ -36,12 +38,13 @@ void calculate_and_plot_directory(const fs::path &directory, const fs::path &out
         parser.addNewFile(entry.path().string());
         parser.parse();
         auto new_path = entry.path();
-        new_path.replace_filename(entry.path().stem() / "_annotated.circ");
-        parser.writeTrough(new_path.string());
+        new_path.replace_filename(entry.path().stem());
+        out_prefix = output_directory / new_path.stem();
+        parser.writeTrough(out_prefix.string() + "_annotated.circ");
     }
 
     parser.generateGraphs();
-    fs::path out_prefix = output_directory / "circuits";
+    out_prefix = output_directory / "circuits";
 
     auto clone_groups = getSelectCloneGroups(parser.getGraphs());
     writeCloneGroups(clone_groups, out_prefix.string());
