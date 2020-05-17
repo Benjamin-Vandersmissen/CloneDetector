@@ -40,7 +40,7 @@ std::string Edge::representation() const {
 
     if (!m_to.first->component()->interchangeable_inputs())
         retValue += std::to_string(m_to.second); //add input port
-    retValue += std::to_string(m_to.first->component()->getInputPorts().size()); //TODO: maybe cleanup
+    retValue += " : " + std::to_string(m_to.first->component()->getInputPorts().size()); //TODO: maybe cleanup
     retValue += "]";
     return retValue;
 }
