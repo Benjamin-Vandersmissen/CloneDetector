@@ -247,6 +247,11 @@ std::vector<std::vector<CandidateClone>> Graph::getAllCloneGroups() const {
         bool deleted = false;
         auto it2 = clones.rbegin();
         while(it2 != clones.rend()){  //loop from back to front, because the last clone groups have the most edges, and are most likely to cover the other group
+            if (it2->empty()) {
+                clones.erase(it2.base());
+                it2++;
+                continue;
+            }
             if (it2->begin()->edges().size() == it->begin()->edges().size())
                 break;
             if (covered(*it, *it2)){
