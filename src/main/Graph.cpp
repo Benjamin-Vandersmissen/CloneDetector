@@ -229,6 +229,7 @@ void Graph::discover(const CandidateClone &fragment) {
 
     m_cloneGroups[fragment.edges().size()+1].insert(temp_clone_group.begin(), temp_clone_group.end());
 
+	generated_from_fragment = intersection(generated_from_fragment, candidates);
     for(const auto& new_fragment : generated_from_fragment)
         discover(new_fragment);
 //    std::cout << "<-\n";
