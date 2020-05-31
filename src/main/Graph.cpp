@@ -208,10 +208,15 @@ void Graph::discover(const CandidateClone &fragment) {
 //            std::cout << "edge_" << std::distance(m_cloned_edges.begin(), std::find(m_cloned_edges.begin(), m_cloned_edges.end(), CandidateClone(edge))) << " - ";;
 //        std::cout << "\n";
 //    }
-    std::map<std::string, std::set<CandidateClone>> temp_clone_group; //TODO: ENSURE Non-overlapping
+    std::map<std::string, std::set<CandidateClone>> temp_clone_group;
     for(const auto& candidate : candidates){
         auto temp = const_cast<CandidateClone&>(candidate);
-        temp_clone_group[temp.representation()].insert(candidate);
+        bool overlapping = false;
+        for(const auto& temp_candidate : temp_clone_group[temp.representation()]) {
+            overlapping |= overlap(temp_candidate, candidate);
+        }
+        if (!overlapping)
+            temp_clone_group[temp.representation()].insert(candidate);
     }
 
     auto it = temp_clone_group.begin();
