@@ -138,11 +138,7 @@ void Graph::prune(std::set<CandidateClone> &candidate_set, unsigned iteration) {
         //The key of a CandidateClone doesn't depend on the representation, so we can safely edit this value in our object
         auto& reference = const_cast<CandidateClone&>(candidate);
         auto representation = reference.representation();
-        bool overlapping = false;
-        for(const auto& other : mapping[representation])
-            overlapping |= overlap(other, candidate);
-        if (! overlapping)
-            mapping[representation].push_back(candidate);
+        mapping[representation].push_back(candidate);
     }
 
     candidate_set.clear();
