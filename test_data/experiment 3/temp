@@ -1,0 +1,466 @@
+0
+Before Pruning:34
+After Pruning:34
+After Extending:104
+1
+Before Pruning:104
+After Pruning:104
+After Extending:388
+2
+Before Pruning:388
+After Pruning:388
+After Extending:1416
+3
+Before Pruning:1416
+After Pruning:1416
+After Extending:4702
+4
+Before Pruning:4702
+After Pruning:4702
+After Extending:12960
+5
+Before Pruning:12960
+After Pruning:12960
+After Extending:27740
+6
+Before Pruning:27740
+After Pruning:27740
+After Extending:42224
+7
+Before Pruning:42224
+After Pruning:42224
+After Extending:46058
+8
+Before Pruning:46058
+After Pruning:46058
+After Extending:38136
+9
+Before Pruning:38136
+After Pruning:38136
+After Extending:24588
+10
+Before Pruning:24588
+After Pruning:24588
+After Extending:12352
+11
+Before Pruning:12352
+After Pruning:12352
+After Extending:4758
+12
+Before Pruning:4758
+After Pruning:4758
+After Extending:1360
+13
+Before Pruning:1360
+After Pruning:1360
+After Extending:272
+14
+Before Pruning:272
+After Pruning:272
+After Extending:34
+15
+Before Pruning:34
+After Pruning:34
+After Extending:2
+16
+Before Pruning:2
+After Pruning:2
+After Extending:0
+GENERATED CANDIDATES: 1723134
+1
+	Command being timed: "./CloneDetector"
+	User time (seconds): 363.98
+	System time (seconds): 1.63
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:06.32
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 412564
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 102286
+	Voluntary context switches: 322
+	Involuntary context switches: 7440
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+0
+Before Pruning:34
+After Pruning:34
+After Extending:104
+1
+Before Pruning:104
+After Pruning:104
+After Extending:388
+2
+Before Pruning:388
+After Pruning:388
+After Extending:1416
+3
+Before Pruning:1416
+After Pruning:1416
+After Extending:4702
+4
+Before Pruning:4702
+After Pruning:4702
+After Extending:12960
+5
+Before Pruning:12960
+After Pruning:12960
+After Extending:27740
+6
+Before Pruning:27740
+After Pruning:27740
+After Extending:42224
+7
+Before Pruning:42224
+After Pruning:42224
+After Extending:46058
+8
+Before Pruning:46058
+After Pruning:46058
+After Extending:38136
+9
+Before Pruning:38136
+After Pruning:38136
+After Extending:24588
+10
+Before Pruning:24588
+After Pruning:24588
+After Extending:12352
+11
+Before Pruning:12352
+After Pruning:12352
+After Extending:4758
+12
+Before Pruning:4758
+After Pruning:4758
+After Extending:1360
+13
+Before Pruning:1360
+After Pruning:1360
+After Extending:272
+14
+Before Pruning:272
+After Pruning:272
+After Extending:34
+15
+Before Pruning:34
+After Pruning:34
+After Extending:2
+16
+Before Pruning:2
+After Pruning:2
+After Extending:0
+GENERATED CANDIDATES: 1723134
+1
+	Command being timed: "./CloneDetector"
+	User time (seconds): 371.46
+	System time (seconds): 2.07
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:14.27
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 412620
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 102286
+	Voluntary context switches: 32
+	Involuntary context switches: 8208
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+0
+Before Pruning:34
+After Pruning:34
+After Extending:104
+1
+Before Pruning:104
+After Pruning:104
+After Extending:388
+2
+Before Pruning:388
+After Pruning:388
+After Extending:1416
+3
+Before Pruning:1416
+After Pruning:1416
+After Extending:4702
+4
+Before Pruning:4702
+After Pruning:4702
+After Extending:12960
+5
+Before Pruning:12960
+After Pruning:12960
+After Extending:27740
+6
+Before Pruning:27740
+After Pruning:27740
+After Extending:42224
+7
+Before Pruning:42224
+After Pruning:42224
+After Extending:46058
+8
+Before Pruning:46058
+After Pruning:46058
+After Extending:38136
+9
+Before Pruning:38136
+After Pruning:38136
+After Extending:24588
+10
+Before Pruning:24588
+After Pruning:24588
+After Extending:12352
+11
+Before Pruning:12352
+After Pruning:12352
+After Extending:4758
+12
+Before Pruning:4758
+After Pruning:4758
+After Extending:1360
+13
+Before Pruning:1360
+After Pruning:1360
+After Extending:272
+14
+Before Pruning:272
+After Pruning:272
+After Extending:34
+15
+Before Pruning:34
+After Pruning:34
+After Extending:2
+16
+Before Pruning:2
+After Pruning:2
+After Extending:0
+GENERATED CANDIDATES: 1723134
+1
+	Command being timed: "./CloneDetector"
+	User time (seconds): 401.73
+	System time (seconds): 1.84
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:45.02
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 412608
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 102284
+	Voluntary context switches: 324
+	Involuntary context switches: 14164
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+0
+Before Pruning:34
+After Pruning:34
+After Extending:104
+1
+Before Pruning:104
+After Pruning:104
+After Extending:388
+2
+Before Pruning:388
+After Pruning:388
+After Extending:1416
+3
+Before Pruning:1416
+After Pruning:1416
+After Extending:4702
+4
+Before Pruning:4702
+After Pruning:4702
+After Extending:12960
+5
+Before Pruning:12960
+After Pruning:12960
+After Extending:27740
+6
+Before Pruning:27740
+After Pruning:27740
+After Extending:42224
+7
+Before Pruning:42224
+After Pruning:42224
+After Extending:46058
+8
+Before Pruning:46058
+After Pruning:46058
+After Extending:38136
+9
+Before Pruning:38136
+After Pruning:38136
+After Extending:24588
+10
+Before Pruning:24588
+After Pruning:24588
+After Extending:12352
+11
+Before Pruning:12352
+After Pruning:12352
+After Extending:4758
+12
+Before Pruning:4758
+After Pruning:4758
+After Extending:1360
+13
+Before Pruning:1360
+After Pruning:1360
+After Extending:272
+14
+Before Pruning:272
+After Pruning:272
+After Extending:34
+15
+Before Pruning:34
+After Pruning:34
+After Extending:2
+16
+Before Pruning:2
+After Pruning:2
+After Extending:0
+GENERATED CANDIDATES: 1723134
+1
+	Command being timed: "./CloneDetector"
+	User time (seconds): 393.00
+	System time (seconds): 1.62
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:35.40
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 412592
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 102285
+	Voluntary context switches: 325
+	Involuntary context switches: 7472
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+0
+Before Pruning:34
+After Pruning:34
+After Extending:104
+1
+Before Pruning:104
+After Pruning:104
+After Extending:388
+2
+Before Pruning:388
+After Pruning:388
+After Extending:1416
+3
+Before Pruning:1416
+After Pruning:1416
+After Extending:4702
+4
+Before Pruning:4702
+After Pruning:4702
+After Extending:12960
+5
+Before Pruning:12960
+After Pruning:12960
+After Extending:27740
+6
+Before Pruning:27740
+After Pruning:27740
+After Extending:42224
+7
+Before Pruning:42224
+After Pruning:42224
+After Extending:46058
+8
+Before Pruning:46058
+After Pruning:46058
+After Extending:38136
+9
+Before Pruning:38136
+After Pruning:38136
+After Extending:24588
+10
+Before Pruning:24588
+After Pruning:24588
+After Extending:12352
+11
+Before Pruning:12352
+After Pruning:12352
+After Extending:4758
+12
+Before Pruning:4758
+After Pruning:4758
+After Extending:1360
+13
+Before Pruning:1360
+After Pruning:1360
+After Extending:272
+14
+Before Pruning:272
+After Pruning:272
+After Extending:34
+15
+Before Pruning:34
+After Pruning:34
+After Extending:2
+16
+Before Pruning:2
+After Pruning:2
+After Extending:0
+GENERATED CANDIDATES: 1723134
+1
+	Command being timed: "./CloneDetector"
+	User time (seconds): 406.11
+	System time (seconds): 1.76
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:48.90
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 412580
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 102287
+	Voluntary context switches: 325
+	Involuntary context switches: 9975
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
