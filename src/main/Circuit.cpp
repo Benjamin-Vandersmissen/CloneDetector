@@ -4,7 +4,7 @@
 
 #include "Circuit.h"
 
-Circuit::Circuit(std::string name, std::string file) : m_name(std::move(name)), m_file(std::move(file)){}
+Circuit::Circuit(std::string name, std::string file) : m_name(std::move("user_"+name)), m_file(std::move(file)){}
 
 void Circuit::addWire(const std::string &from, const std::string &to) {
     m_wires.emplace_back(from, to);
